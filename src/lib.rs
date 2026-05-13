@@ -4,7 +4,7 @@ extern crate self as qqbot_sdk;
 
 #[cfg(feature = "events")]
 mod events;
-pub use crate::events::common::{CommonMessage, FromCommonMessage};
+pub use crate::events::common::{CommonMessage, FromCommonMessage, MessageFrom};
 pub use crate::events::payload::DispatchPayload;
 
 #[cfg(feature = "openapi")]

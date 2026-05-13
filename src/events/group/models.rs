@@ -56,7 +56,7 @@ impl CommonMessage for GroupAtMessage {
         &self.msg_seq
     }
 
-    fn get_message_from_type() -> MessageFrom {
+    fn get_message_from_type(&self) -> MessageFrom {
         MessageFrom::Group
     }
 }

@@ -421,14 +421,8 @@ pub struct MessageEmbedField {
 /// 媒体类型的消息。
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MessageMedia {
-    /// 文件类型（数字编码）。
-    pub file_type: u8,
-    /// 文件 URL。
-    pub url: String,
-    /// 是否由服务端发送消息。
-    pub srv_send_msg: bool,
-    /// 可选的文件数据（例如 base64 字符串）。
-    pub file_data: Option<String>,
+    /// 上传文件后返回的 file_info
+    pub file_info: String,
 }
 
 /// PATCH /channels/{channel_id}/messages/{message_id} 请求参数。

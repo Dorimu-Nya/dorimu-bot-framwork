@@ -27,9 +27,7 @@ pub trait CommonMessage: Sync {
     fn get_timestamp(&self) -> &Option<String>;
     fn get_attachments(&self) -> &Option<Vec<Attachment>>;
     fn get_msg_seq(&self) -> &Option<u64>;
-    fn get_message_from_type() -> MessageFrom
-    where
-        Self: Sized;
+    fn get_message_from_type(&self) -> MessageFrom;
 }
 
 /// CommonMessage 的提取转换 trait， 用于在处理 command宏 的时候的转换
@@ -96,5 +94,11 @@ impl<'a> FromCommonMessage<'a> for Option<String> {
 impl<'a> FromCommonMessage<'a> for String {
     fn from(req: &'a dyn CommonMessage) -> Self {
         req.get_content().clone().unwrap_or_default()
+    }
+}
+
+impl<'a> FromCommonMessage<'a> for MessageFrom {
+    fn from(req: &'a dyn CommonMessage) -> Self {
+        req.get_message_from_type()
     }
 }

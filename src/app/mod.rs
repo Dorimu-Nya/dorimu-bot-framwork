@@ -7,3 +7,5 @@ pub mod handler;
 pub(crate) use self::app::App;
 use self::config::AppConfig;
 use context::ContextStore;
+
+pub use self::app::ApiClient;

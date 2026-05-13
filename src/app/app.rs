@@ -10,12 +10,14 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
+pub type ApiClient = OpenApi<HttpTokenProvider>;
+
 #[derive(Clone)]
 pub struct App {
     /// 票据配置
     pub credential: CredentialConfig,
     /// 生产环境的 api 客户端
-    prod_api_client: Arc<OpenApi<HttpTokenProvider>>,
+    prod_api_client: Arc<ApiClient>,
     /// 依赖容器
     pub dependency_container: ContextStore,
     /// 命令函数容器
@@ -88,13 +90,13 @@ impl App {
     }
 
     /// 获取 api 客户端。
-    pub fn get_api_client(&self) -> Arc<OpenApi<HttpTokenProvider>> {
+    pub fn get_api_client(&self) -> Arc<ApiClient> {
         //TODO: 沙盒分配策略
         return self.get_prod_client();
     }
 
     /// 获取生产环境的 api 客户端。
-    pub fn get_prod_client(&self) -> Arc<OpenApi<HttpTokenProvider>> {
+    pub fn get_prod_client(&self) -> Arc<ApiClient> {
         Arc::clone(&self.prod_api_client)
     }
 }

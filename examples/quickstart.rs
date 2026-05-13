@@ -1,11 +1,13 @@
 use qqbot_sdk::models::message::{
     Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
-    Permission, PermissionType, RenderData,
+    MessageMedia, Permission, PermissionType, RenderData,
 };
-use qqbot_sdk::ReplyingMessage::Text;
-use qqbot_sdk::{run_application, AppConfig, Context, CredentialConfig, ReplyingMessage};
+use qqbot_sdk::ReplyingMessage::{Media, Text};
+use qqbot_sdk::{app::ApiClient, run_application, AppConfig, CommonMessage, Context, CredentialConfig, MessageFrom, ReplyingMessage};
 use qqbot_sdk_macros::command;
 use std::sync::atomic::{AtomicI16, Ordering};
+use qqbot_sdk::openapi::UploadMediaRequest;
+
 struct CustomContext {
     pub value: AtomicI16,
 }
@@ -162,4 +164,47 @@ fn markdown() -> ReplyingMessage {
             },
         }),
     })
+}
+
+#[command("/image")]
+async fn image(api: Context<ApiClient>, msg: &dyn CommonMessage) -> ReplyingMessage {
+    let resp = match msg.get_message_from_type() {
+        MessageFrom::C2c => {
+            api
+                .media()
+                .upload_c2c(
+                    msg.get_author_openid(),
+                    &UploadMediaRequest {
+                        file_type: 1,
+                        url: String::from("https://example.com/image.jpg"),
+                        srv_send_msg: false,
+                        file_data: None,
+                    },
+                )
+                .await
+        }
+        MessageFrom::Group => {
+            api
+                .media()
+                .upload_group(
+                    msg.get_author_openid(),
+                    &UploadMediaRequest {
+                        file_type: 1,
+                        url: String::from("https://example.com/image.jpg"),
+                        srv_send_msg: false,
+                        file_data: None,
+                    },
+                )
+                .await
+        }
+    };
+
+    match resp {
+        Ok(response) => {
+            Media(MessageMedia {
+                file_info: response.1.file_info.unwrap_or("".to_string()),
+            })
+        }
+        Err(_) => Text("上传失败".to_string()),
+    }
 }

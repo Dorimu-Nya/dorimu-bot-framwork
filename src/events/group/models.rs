@@ -59,6 +59,9 @@ impl CommonMessage for GroupAtMessage {
     fn get_message_from_type(&self) -> MessageFrom {
         MessageFrom::Group
     }
+    fn get_scene_openid(&self) -> &String {
+        &self.group_openid
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

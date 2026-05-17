@@ -72,6 +72,9 @@ impl CommonMessage for C2cMessage {
     fn get_message_from_type(&self) -> MessageFrom {
         MessageFrom::C2c
     }
+    fn get_scene_openid(&self) -> &String {
+        &self.author.user_openid
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

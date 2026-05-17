@@ -28,6 +28,9 @@ pub trait CommonMessage: Sync {
     fn get_attachments(&self) -> &Option<Vec<Attachment>>;
     fn get_msg_seq(&self) -> &Option<u64>;
     fn get_message_from_type(&self) -> MessageFrom;
+    /// get_scene_openid
+    /// 返回场景下的openid，私聊返回用户id，群聊返回群聊的id
+    fn get_scene_openid(&self) -> &String;
 }
 
 /// CommonMessage 的提取转换 trait， 用于在处理 command宏 的时候的转换

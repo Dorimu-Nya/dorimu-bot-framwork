@@ -173,7 +173,7 @@ async fn image(api: Context<ApiClient>, msg: &dyn CommonMessage) -> ReplyingMess
             api
                 .media()
                 .upload_c2c(
-                    msg.get_author_openid(),
+                    msg.get_scene_openid(),
                     &UploadMediaRequest {
                         file_type: 1,
                         url: String::from("https://example.com/image.jpg"),
@@ -187,7 +187,7 @@ async fn image(api: Context<ApiClient>, msg: &dyn CommonMessage) -> ReplyingMess
             api
                 .media()
                 .upload_group(
-                    msg.get_author_openid(),
+                    msg.get_scene_openid(),
                     &UploadMediaRequest {
                         file_type: 1,
                         url: String::from("https://example.com/image.jpg"),

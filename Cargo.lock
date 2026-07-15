@@ -957,17 +957,61 @@ dependencies = [
 name = "qqbot_sdk"
 version = "0.1.0"
 dependencies = [
- "async-trait",
+ "base64",
+ "inventory",
+ "qqbot_sdk_app",
+ "qqbot_sdk_axum",
+ "qqbot_sdk_commands",
+ "qqbot_sdk_core",
+ "qqbot_sdk_macros",
+ "tokio",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "qqbot_sdk_app"
+version = "0.1.0"
+dependencies = [
+ "inventory",
+ "qqbot_sdk_commands",
+ "qqbot_sdk_core",
+ "serde",
+ "tracing",
+]
+
+[[package]]
+name = "qqbot_sdk_axum"
+version = "0.1.0"
+dependencies = [
  "axum",
+ "qqbot_sdk_app",
+ "qqbot_sdk_core",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "qqbot_sdk_commands"
+version = "0.1.0"
+dependencies = [
+ "inventory",
+ "qqbot_sdk_core",
+ "serde",
+]
+
+[[package]]
+name = "qqbot_sdk_core"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
  "base64",
  "ed25519-dalek",
  "hex",
  "http",
- "inventory",
  "once_cell",
  "percent-encoding",
  "qqbot_sdk_event_macros",
- "qqbot_sdk_macros",
  "reqwest",
  "serde",
  "serde_json",
@@ -975,7 +1019,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

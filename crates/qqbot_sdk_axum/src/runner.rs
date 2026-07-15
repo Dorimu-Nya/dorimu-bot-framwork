@@ -1,0 +1,71 @@
+use axum::routing::any;
+use axum::{Json, Router};
+use qqbot_sdk_app::{App, AppConfig};
+use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
+use qqbot_sdk_core::events::c2c::models::C2cMessage;
+use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
+use std::sync::Arc;
+use tracing::info;
+
+/// 启动基于Axum的 QQ Bot 程序
+///
+/// * `config` - 程序配置
+/// * `base_router` axum的router，当为Some时，将会以其为基础构造axum的路由
+/// example:
+/// ```no_run
+/// use qqbot_sdk_app::{AppConfig, CredentialConfig};
+/// use qqbot_sdk_axum::run_application;
+/// #[tokio::main]
+/// async fn main() -> std::io::Result<()> {
+///     let config = AppConfig {
+///         credential: CredentialConfig {
+///             app_id: "YOUR APP ID".to_string(),
+///             secret: "YOUR SECRET".to_string(),
+///         },
+///         ..Default::default()
+///     };
+///     run_application(config).await
+/// }
+/// ```
+pub async fn run_application_with_router(
+    config: AppConfig,
+    base_router: Option<Router>,
+) -> std::io::Result<()> {
+    tracing_subscriber::fmt::init();
+
+    let webhook_path = config.listening.webhook_path.clone();
+    let bind_addr = config.listening.bind_addr.clone();
+
+    let app = Arc::new(App::new(config));
+
+    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn1);
+    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn2);
+    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn3);
+
+    let base_router = base_router.unwrap_or(Router::new());
+    let router = base_router.route(
+        &webhook_path,
+        any({
+            let app = Arc::clone(&app);
+            async move |Json(payload): Json<WebhookPayload>| {
+                Json(app.webhook_handler(payload).await)
+            }
+        }),
+    );
+
+    let listener = tokio::net::TcpListener::bind(&bind_addr).await?;
+    info!("Listening on {}", bind_addr);
+    axum::serve(listener, router).await
+}
+
+/// 启动基于Axum的 QQ Bot 程序
+///
+/// 将会用默认方式构造axum的router
+pub async fn run_application(config: AppConfig) -> std::io::Result<()> {
+    run_application_with_router(config, None).await
+}
+
+pub fn test_fn1() {}
+pub fn test_fn2(_payload: &DispatchPayload) {}
+
+pub fn test_fn3(_detail: &C2cMessage) {}

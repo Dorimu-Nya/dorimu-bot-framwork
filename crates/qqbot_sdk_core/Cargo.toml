@@ -1,0 +1,29 @@
+[package]
+name = "qqbot_sdk_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Core event, OpenAPI, and signature support for qqbot_sdk"
+
+[features]
+default = ["events", "openapi", "signature"]
+events = []
+openapi = []
+signature = []
+
+[dependencies]
+async-trait.workspace = true
+base64.workspace = true
+ed25519-dalek.workspace = true
+hex.workspace = true
+http.workspace = true
+once_cell.workspace = true
+percent-encoding.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_repr.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+qqbot_sdk_event_macros = { path = "../qqbot_sdk_event_macros" }

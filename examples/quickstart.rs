@@ -1,8 +1,8 @@
 use base64::engine::general_purpose;
 use base64::Engine;
-use qqbot_sdk::events::event::Event;
 use qqbot_sdk::models::message::{
-    Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown, MessageMedia, Permission, PermissionType, RenderData,
+    Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
+    MessageMedia, Permission, PermissionType, RenderData,
 };
 use qqbot_sdk::models::UploadMediaRequest;
 use qqbot_sdk::CommonMessage;
@@ -12,7 +12,6 @@ use qqbot_sdk::{
     ReplyingMessage, ReplyingMessage::Media,
 };
 use qqbot_sdk_macros::command;
-use std::any::Any;
 use std::fs;
 use std::sync::atomic::{AtomicI16, Ordering};
 struct CustomContext {
@@ -65,8 +64,6 @@ async fn main() -> std::io::Result<()> {
         .with_context(Context::new(CustomContext::new()))
         .with_command("/hi1", move || earth_hi.say_hi())
         .with_command("/hi2", move || moon_hi.say_hi());
-
-    
 
     run_application(config).await
 }
@@ -209,7 +206,7 @@ async fn image(
         Ok(response) => {
             // let file_uuid = response.1.file_info.unwrap_or("".to_string());
             Media(MessageMedia {
-                file_info: response.1.file_info.unwrap()
+                file_info: response.1.file_info.unwrap(),
             })
         }
         Err(_) => Text("上传失败".to_string()),

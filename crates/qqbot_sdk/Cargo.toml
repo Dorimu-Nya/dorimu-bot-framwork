@@ -1,0 +1,31 @@
+[package]
+name = "qqbot_sdk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "QQ bot SDK (webhook-first)"
+
+[features]
+default = ["app", "macros", "axum-runner", "builtin-message-handler"]
+events = ["qqbot_sdk_core/events"]
+openapi = ["qqbot_sdk_core/openapi"]
+signature = ["qqbot_sdk_core/signature"]
+app = ["commands", "dep:qqbot_sdk_app"]
+commands = ["dep:qqbot_sdk_commands"]
+macros = ["commands", "dep:qqbot_sdk_macros", "dep:inventory"]
+axum-runner = ["app", "dep:qqbot_sdk_axum"]
+builtin-message-handler = ["app", "qqbot_sdk_app/builtin-message-handler"]
+full = ["app", "macros", "axum-runner"]
+
+[dependencies]
+inventory = { workspace = true, optional = true }
+qqbot_sdk_core = { path = "../qqbot_sdk_core", default-features = false }
+qqbot_sdk_app = { path = "../qqbot_sdk_app", optional = true }
+qqbot_sdk_axum = { path = "../qqbot_sdk_axum", optional = true }
+qqbot_sdk_commands = { path = "../qqbot_sdk_commands", optional = true }
+qqbot_sdk_macros = { path = "../qqbot_sdk_macros", optional = true }
+
+[dev-dependencies]
+base64.workspace = true
+tokio.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt", "env-filter"] }

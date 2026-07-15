@@ -1,0 +1,11 @@
+[package]
+name = "qqbot_sdk_commands"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Command runtime support for qqbot_sdk"
+
+[dependencies]
+inventory.workspace = true
+qqbot_sdk_core = { path = "../qqbot_sdk_core", features = ["events", "openapi"] }
+serde.workspace = true

@@ -4,10 +4,13 @@ use super::guild::{ChannelEvent, GuildEvent};
 use super::member::GuildMemberEvent;
 use super::messages::GuildMessages;
 use super::open_forum::OpenForumEvent;
+use crate::events::event::Event;
+use crate::events::payload::{DispatchPayload, FromDispatchPayload};
 use serde::{Deserialize, Serialize};
 
 /// 频道事件
-#[derive(Debug, Serialize, Deserialize)]
+#[qqbot_sdk_event_macros::event_kind]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "t", content = "d")]
 pub enum GuildEventType {
     /// 频道内 @ 机器人的消息事件
@@ -102,8 +105,18 @@ pub enum GuildEventType {
     #[serde(rename = "AUDIO_OR_LIVE_CHANNEL_MEMBER_EXIT")]
     AudioOrLiveChannelMemberExit(AudioOrLiveChannelMemberEvent),
 }
+
+// impl GuildEventType {
+//     fn to_kind(self) -> GuildEventTypeKind {
+//         match self {
+//             Self::AtMessageCreate(_) => GuildEventTypeKind::AtMessageCreate,
+//         }
+//     }
+// }
+
 // 下面这一部分貌似没有用？webhook回调订阅好像没这些东西
-#[derive(Debug, Serialize, Deserialize)]
+#[qqbot_sdk_event_macros::event_kind]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "t", content = "d")]
 pub enum ForumEventType {
     /// 论坛事件：用户创建主题
@@ -130,4 +143,122 @@ pub enum ForumEventType {
     /// 帖子审核事件
     #[serde(rename = "FORUM_PUBLISH_AUDIT_RESULT")]
     ForumAuditEvent(ForumEventAuditResult),
+}
+
+impl FromDispatchPayload for GuildMessages {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::GuildEventType(GuildEventType::AtMessageCreate(value))
+            | Event::GuildEventType(GuildEventType::DirectMessageCreate(value)) => {
+                Some(value.clone())
+            }
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for OpenForumEvent {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::GuildEventType(GuildEventType::OpenForumThreadCreate(value))
+            | Event::GuildEventType(GuildEventType::OpenForumPostCreate(value))
+            | Event::GuildEventType(GuildEventType::OpenForumReplyCreate(value))
+            | Event::GuildEventType(GuildEventType::OpenForumThreadUpdate(value))
+            | Event::GuildEventType(GuildEventType::OpenForumPostDelete(value))
+            | Event::GuildEventType(GuildEventType::OpenForumReplyDelete(value))
+            | Event::GuildEventType(GuildEventType::OpenForumThreadDelete(value)) => {
+                Some(value.clone())
+            }
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for GuildEvent {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::GuildEventType(GuildEventType::GuildCreate(value))
+            | Event::GuildEventType(GuildEventType::GuildUpdate(value))
+            | Event::GuildEventType(GuildEventType::GuildDelete(value)) => Some(value.clone()),
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for ChannelEvent {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::GuildEventType(GuildEventType::ChannelCreate(value))
+            | Event::GuildEventType(GuildEventType::ChannelUpdate(value))
+            | Event::GuildEventType(GuildEventType::ChannelDelete(value)) => Some(value.clone()),
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for GuildMemberEvent {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::GuildEventType(GuildEventType::GuildMemberAdd(value))
+            | Event::GuildEventType(GuildEventType::GuildMemberRemove(value))
+            | Event::GuildEventType(GuildEventType::GuildMemberUpdate(value)) => {
+                Some(value.clone())
+            }
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for AudioOrLiveChannelMemberEvent {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::GuildEventType(GuildEventType::AudioOrLiveChannelMemberEnter(value))
+            | Event::GuildEventType(GuildEventType::AudioOrLiveChannelMemberExit(value)) => {
+                Some(value.clone())
+            }
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for ForumEventThread {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::ForumEventType(ForumEventType::ForumThreadCreate(value))
+            | Event::ForumEventType(ForumEventType::ForumThreadUpdate(value))
+            | Event::ForumEventType(ForumEventType::ForumThreadDelete(value)) => {
+                Some(value.clone())
+            }
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for ForumEventPost {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::ForumEventType(ForumEventType::ForumPostCreate(value))
+            | Event::ForumEventType(ForumEventType::ForumPostDelete(value)) => Some(value.clone()),
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for ForumEventReply {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::ForumEventType(ForumEventType::ForumReplyCreate(value))
+            | Event::ForumEventType(ForumEventType::ForumReplyDelete(value)) => Some(value.clone()),
+            _ => None,
+        }
+    }
+}
+
+impl FromDispatchPayload for ForumEventAuditResult {
+    fn from(payload: &DispatchPayload) -> Option<Self> {
+        match &payload.event {
+            Event::ForumEventType(ForumEventType::ForumAuditEvent(value)) => Some(value.clone()),
+            _ => None,
+        }
+    }
 }

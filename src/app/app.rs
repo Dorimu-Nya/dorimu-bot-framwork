@@ -1,12 +1,11 @@
-use super::commands::defining::{wrap_command_handle_fn, DynCommandHandleFn};
-use super::commands::store::CommandsStore;
+#[cfg(feature = "builtin-message-handler")]
+use super::commands::plugin::CommandPlugin;
 use super::AppConfig;
 use super::ContextStore;
 use crate::openapi::{
     HttpTokenProvider, OpenApi, OpenApiClient, OpenApiConfig, OpenApiPaths, TokenManager,
 };
-use crate::{CommandDef, CredentialConfig};
-use std::collections::HashMap;
+use crate::CredentialConfig;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -15,16 +14,15 @@ pub type ApiClient = OpenApi<HttpTokenProvider>;
 #[derive(Clone)]
 pub struct App {
     /// 票据配置
-    pub credential: CredentialConfig,
+    pub(crate) credential: CredentialConfig,
     /// 生产环境的 api 客户端
     prod_api_client: Arc<ApiClient>,
     /// 依赖容器
     pub dependency_container: ContextStore,
-    /// 命令函数容器
-    pub commands: CommandsStore,
 }
 
 impl App {
+    /// 根据应用配置初始化 API、依赖容器、命令插件和事件处理器。
     pub fn new(config: AppConfig) -> Self {
         // api 客户端初始化
         let token_provider = HttpTokenProvider::from_env_or_official(
@@ -42,51 +40,34 @@ impl App {
 
         // 初始化ioc
         let container = ContextStore::new();
-        let o = container.insert_arc(Arc::clone(&api));
         if !config.ignore_checking {
-            if let Some(c) = o {
-                panic!("Context {:?} 重复传入！", c);
+            if let Some(context) = container.insert_arc(Arc::clone(&api)) {
+                panic!("Context {:?} duplicated", context);
             }
+        } else {
+            container.insert_arc(Arc::clone(&api));
         }
 
         for register in &config.contexts {
-            let o = register(&container);
             if !config.ignore_checking {
-                if let Some(c) = o {
-                    panic!("Context {:?} 重复传入！", c);
+                if let Some(context) = register(&container) {
+                    panic!("Context {:?} duplicated", context);
                 }
+            } else {
+                register(&container);
             }
         }
 
-        let mut commands: HashMap<&'static str, DynCommandHandleFn> = HashMap::new();
-
-        #[cfg(feature = "macros")]
-        inventory::iter::<CommandDef>.into_iter().for_each(|x| {
-            let o = commands.insert(x.prefix, wrap_command_handle_fn(x.handler));
-            if !config.ignore_checking {
-                if let Some(_) = o {
-                    panic!("Command {:?} 重复传入！", x.prefix);
-                }
-            }
-        });
-
-        for (prefix, handler) in &config.commands {
-            let o = commands.insert(*prefix, Arc::clone(handler));
-            if !config.ignore_checking {
-                if let Some(_) = o {
-                    panic!("Command {:?} 重复传入！", prefix);
-                }
-            }
-        }
-
-        let commands = CommandsStore::new(commands);
-
-        Self {
-            credential: config.credential,
+        let app = Self {
+            credential: config.credential.clone(),
             prod_api_client: api,
             dependency_container: container,
-            commands,
-        }
+        };
+
+        #[cfg(feature = "builtin-message-handler")]
+        app.registe_plugin(&CommandPlugin::from_config(&config, &app));
+
+        app
     }
 
     /// 获取 api 客户端。

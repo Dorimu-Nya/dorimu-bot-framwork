@@ -1,4 +1,4 @@
-use super::event_type::EventType;
+use super::event::Event;
 use super::opcode::{DispatchOp, HttpCallbackAckOp, WebhookAddressVerifyOp};
 use crate::events::validation::ValidationRequest;
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ pub enum WebhookPayload {
 }
 
 /// opcode为0时，服务端进行消息推送的消息对象
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DispatchPayload {
     /// 事件id
     pub id: Option<String>,
@@ -28,17 +28,19 @@ pub struct DispatchPayload {
     pub op: DispatchOp,
     /// 代表事件内容，不同事件类型的事件内容格式都不同，请注意识别。主要用在op为 0 Dispatch 的时候
     #[serde(flatten)]
-    pub event: EventType,
+    pub event: Event,
 }
 
-#[allow(dead_code)] // 未来实现全部事件处理（或拦截器）的时候用
-pub trait FromDispatchPayload<'a>: Sized {
-    fn from(req: &'a DispatchPayload) -> Self;
+/// 从完整事件载荷中提取事件处理器参数。
+///
+/// 返回 `None` 表示当前载荷不包含该类型；事件处理器会跳过本次调用。
+pub trait FromDispatchPayload: Sized {
+    fn from(req: &DispatchPayload) -> Option<Self>;
 }
 
-impl<'a> FromDispatchPayload<'a> for &'a DispatchPayload {
-    fn from(req: &'a DispatchPayload) -> Self {
-        req
+impl FromDispatchPayload for DispatchPayload {
+    fn from(req: &DispatchPayload) -> Option<Self> {
+        Some(req.clone())
     }
 }
 

@@ -1,6 +1,6 @@
 pub mod c2c;
 pub mod common;
-pub mod event_type;
+pub mod event;
 pub mod group;
 pub mod guild;
 pub mod interaction;

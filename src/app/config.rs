@@ -1,4 +1,4 @@
-use super::commands::defining::{CommandHandler, DynCommandHandleFn};
+use super::commands::defining::DynCommandHandleFn;
 use super::ContextStore;
 use qqbot_sdk::Context;
 use serde::Deserialize;
@@ -89,6 +89,9 @@ pub struct AppConfig {
     /// 手动注册的命令处理函数
     #[serde(skip)]
     pub commands: Vec<(&'static str, DynCommandHandleFn)>,
+    // 手动注册的事件处理函数容器。
+    // #[serde(skip)]
+    // pub(crate) event_handlers: EventHandlers,
 }
 
 impl Default for AppConfig {
@@ -101,11 +104,13 @@ impl Default for AppConfig {
             ignore_checking: false,
             contexts: vec![],
             commands: vec![],
+            // event_handlers: EventHandlers::default(),
         }
     }
 }
 
 impl AppConfig {
+    /// 创建使用默认配置的应用构建器。
     pub fn new() -> Self {
         Self::default()
     }
@@ -134,18 +139,6 @@ impl AppConfig {
         self.contexts.push(Box::new(move |store: &ContextStore| {
             store.insert_arc(context.as_arc())
         }));
-        self
-    }
-
-    /// 手动注册命令处理函数。
-    ///
-    /// 与 `#[command]` 不同，手动注册建议使用可拥有所有权的参数类型
-    /// （如 `Option<String>`、`Option<Vec<String>>`）或 `Context<T>`。
-    pub fn with_command<H, Args, Kind>(mut self, prefix: &'static str, handler: H) -> Self
-    where
-        H: CommandHandler<Args, Kind>,
-    {
-        self.commands.push((prefix, handler.into_dyn()));
         self
     }
 }

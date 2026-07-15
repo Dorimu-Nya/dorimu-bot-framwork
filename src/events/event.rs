@@ -6,9 +6,9 @@ use super::message_reaction::event_type::MessageReactionEventType;
 use serde::{Deserialize, Serialize};
 
 /// 全部事件类型汇总分类
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum EventType {
+pub enum Event {
     C2cEventType(C2cEventType),
     GroupEventType(GroupEventType),
     GuildEventType(GuildEventType),

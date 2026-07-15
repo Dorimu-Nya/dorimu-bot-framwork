@@ -1,6 +1,8 @@
 use crate::app::App;
+use crate::events::c2c::event_type::C2cEventTypeKind;
+use crate::events::c2c::models::C2cMessage;
 use crate::events::payload::WebhookPayload;
-use crate::AppConfig;
+use crate::{AppConfig, DispatchPayload};
 use axum::routing::any;
 use axum::{Json, Router};
 use std::sync::Arc;
@@ -35,6 +37,11 @@ pub async fn run_application_with_router(
     let bind_addr = config.listening.bind_addr.clone();
 
     let app = Arc::new(App::new(config));
+
+    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn1);
+    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn2);
+    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn3);
+
     let base_router = base_router.unwrap_or(Router::new());
     let router = base_router.route(
         &webhook_path,
@@ -57,3 +64,8 @@ pub async fn run_application_with_router(
 pub async fn run_application(config: AppConfig) -> std::io::Result<()> {
     run_application_with_router(config, None).await
 }
+
+pub fn test_fn1() {}
+pub fn test_fn2(payload: &DispatchPayload) {}
+
+pub fn test_fn3(detail: &C2cMessage) {}

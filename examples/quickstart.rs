@@ -1,13 +1,20 @@
+use base64::engine::general_purpose;
+use base64::Engine;
+use qqbot_sdk::events::event::Event;
 use qqbot_sdk::models::message::{
-    Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
-    MessageMedia, Permission, PermissionType, RenderData,
+    Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown, MessageMedia, Permission, PermissionType, RenderData,
 };
-use qqbot_sdk::ReplyingMessage::{Media, Text};
-use qqbot_sdk::{app::ApiClient, run_application, AppConfig, CommonMessage, Context, CredentialConfig, MessageFrom, ReplyingMessage};
+use qqbot_sdk::models::UploadMediaRequest;
+use qqbot_sdk::CommonMessage;
+use qqbot_sdk::ReplyingMessage::Text;
+use qqbot_sdk::{
+    run_application, AppConfig, Context, CredentialConfig, HttpTokenProvider, OpenApi,
+    ReplyingMessage, ReplyingMessage::Media,
+};
 use qqbot_sdk_macros::command;
+use std::any::Any;
+use std::fs;
 use std::sync::atomic::{AtomicI16, Ordering};
-use qqbot_sdk::openapi::UploadMediaRequest;
-
 struct CustomContext {
     pub value: AtomicI16,
 }
@@ -59,6 +66,8 @@ async fn main() -> std::io::Result<()> {
         .with_command("/hi1", move || earth_hi.say_hi())
         .with_command("/hi2", move || moon_hi.say_hi());
 
+    
+
     run_application(config).await
 }
 
@@ -80,6 +89,12 @@ fn counting(context: Context<CustomContext>) -> ReplyingMessage {
     let v = context.value.load(Ordering::SeqCst);
     context.plus();
     Text(String::from("Current ") + String::from(v.to_string()).as_str())
+}
+
+#[command("/me")]
+async fn me(api: Context<OpenApi<HttpTokenProvider>>) -> qqbot_sdk::Result<ReplyingMessage> {
+    let (status, user) = api.users().me().await?;
+    Ok(Text(format!("status: {}\nme: {:#?}", status, user)))
 }
 
 #[command("/markdown")]
@@ -116,8 +131,8 @@ fn markdown() -> ReplyingMessage {
             ***加粗斜体***
             ~~删除线~~
 
-            欢迎来到：[🔗腾讯网](https://www.qq.com)
-            文档可以访问<https://doc.qq.com>
+            欢迎来到：[🔗腾讯网]()
+            文档可以访问<>
 
             "
             .to_string(),
@@ -167,42 +182,34 @@ fn markdown() -> ReplyingMessage {
 }
 
 #[command("/image")]
-async fn image(api: Context<ApiClient>, msg: &dyn CommonMessage) -> ReplyingMessage {
-    let resp = match msg.get_message_from_type() {
-        MessageFrom::C2c => {
-            api
-                .media()
-                .upload_c2c(
-                    msg.get_scene_openid(),
-                    &UploadMediaRequest {
-                        file_type: 1,
-                        url: String::from("https://example.com/image.jpg"),
-                        srv_send_msg: false,
-                        file_data: None,
-                    },
-                )
-                .await
-        }
-        MessageFrom::Group => {
-            api
-                .media()
-                .upload_group(
-                    msg.get_scene_openid(),
-                    &UploadMediaRequest {
-                        file_type: 1,
-                        url: String::from("https://example.com/image.jpg"),
-                        srv_send_msg: false,
-                        file_data: None,
-                    },
-                )
-                .await
-        }
-    };
+async fn image(
+    api: Context<OpenApi<HttpTokenProvider>>,
+    msg: &dyn CommonMessage,
+) -> ReplyingMessage {
+    let image_bytes = fs::read("/root/image.jpg").unwrap();
 
+    let encoded = general_purpose::STANDARD.encode(image_bytes);
+
+    let data_url = format!("data:image/jpeg;base64,{}", encoded);
+
+    let resp = api
+        .media()
+        .upload_c2c(
+            msg.get_author_openid(),
+            &UploadMediaRequest {
+                file_type: 1,
+                url: String::from(""),
+                srv_send_msg: false,
+                file_data: Some(data_url),
+            },
+        )
+        .await;
+    println!("{:?}", resp);
     match resp {
         Ok(response) => {
+            // let file_uuid = response.1.file_info.unwrap_or("".to_string());
             Media(MessageMedia {
-                file_info: response.1.file_info.unwrap_or("".to_string()),
+                file_info: response.1.file_info.unwrap()
             })
         }
         Err(_) => Text("上传失败".to_string()),

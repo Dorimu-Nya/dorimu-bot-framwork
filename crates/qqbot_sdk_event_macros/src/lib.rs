@@ -1,4 +1,3 @@
-use heck::ToShoutySnakeCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, ItemEnum};
@@ -17,12 +16,6 @@ fn event_kind_impl(event_enum: ItemEnum) -> proc_macro2::TokenStream {
         .variants
         .iter()
         .map(|variant| variant.ident.clone())
-        .collect();
-
-    let variants_vec: Vec<syn::Ident> = variants
-        .clone()
-        .iter()
-        .map(|ident| format_ident!("{}_HANDLERS", ident.to_string().to_shouty_snake_case()))
         .collect();
 
     let ref_patterns: Vec<_> = event_enum
@@ -48,30 +41,6 @@ fn event_kind_impl(event_enum: ItemEnum) -> proc_macro2::TokenStream {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
         pub enum #kind_ident {
             #(#variants),*
-        }
-
-
-        #(
-            pub static #variants_vec: ::std::sync::RwLock<Vec<qqbot_sdk_core::DynEventHandler>> =
-                ::std::sync::RwLock::new(Vec::new());
-        )*
-
-        impl qqbot_sdk_core::KindRegistryKey for #kind_ident {
-            fn get_writable_vec(&self) -> ::std::sync::RwLockWriteGuard<'static, Vec<qqbot_sdk_core::DynEventHandler>> {
-                match self {
-                    #(
-                        Self::#variants => #variants_vec.write().unwrap(),
-                    )*
-                }
-            }
-
-            fn get_readable_vec(&self) -> ::std::vec::Vec<qqbot_sdk_core::DynEventHandler> {
-                match self {
-                    #(
-                        Self::#variants => #variants_vec.read().unwrap().clone(),
-                    )*
-                }
-            }
         }
 
         impl #enum_ident {

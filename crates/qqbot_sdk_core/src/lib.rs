@@ -12,6 +12,8 @@ pub mod events;
 #[cfg(feature = "events")]
 pub use crate::events::common::{CommonMessage, FromCommonMessage, MessageFrom};
 #[cfg(feature = "events")]
+pub use crate::events::event::EventKind;
+#[cfg(feature = "events")]
 pub use crate::events::payload::{DispatchPayload, FromDispatchPayload};
 
 #[cfg(feature = "openapi")]
@@ -38,11 +40,7 @@ pub use signature::sign_webhook_validation;
 #[cfg(feature = "events")]
 pub mod event_handler;
 #[cfg(feature = "events")]
-pub mod event_registry_key;
-#[cfg(feature = "events")]
 pub use event_handler::{
     AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, DynEventHandler, EventHandler,
     EventHandlerFuture, FromEventArg, PayloadEventArg, SyncEventHandlerKind,
 };
-#[cfg(feature = "events")]
-pub use event_registry_key::KindRegistryKey;

@@ -1,6 +1,6 @@
 use super::plugin::Plugin;
 use crate::app::App;
-use qqbot_sdk_core::{EventHandler, KindRegistryKey};
+use qqbot_sdk_core::{EventHandler, EventKind};
 
 impl App {
     /// 加载一个插件并让它注册所需的事件处理器。
@@ -13,9 +13,14 @@ impl App {
     /// 注册一个事件处理器。
     pub fn registe_event_handler<K, Args, Kind, H>(&self, kind: K, handler: H)
     where
-        K: KindRegistryKey,
+        K: Into<EventKind>,
         H: EventHandler<Args, Kind>,
     {
-        kind.get_writable_vec().push(handler.into_dyn());
+        self.event_handlers
+            .write()
+            .unwrap()
+            .entry(kind.into())
+            .or_default()
+            .push(handler.into_dyn());
     }
 }

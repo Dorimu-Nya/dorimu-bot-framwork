@@ -2,7 +2,7 @@ use super::App;
 use qqbot_sdk_core::events::event::Event;
 use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
 use qqbot_sdk_core::events::validation::{ValidationRequest, ValidationResponse};
-use qqbot_sdk_core::KindRegistryKey;
+use qqbot_sdk_core::EventKind;
 use tracing::debug;
 
 impl App {
@@ -55,10 +55,17 @@ impl App {
 
     async fn dispatch_kind<K>(&self, kind: K, payload: &DispatchPayload)
     where
-        K: KindRegistryKey,
+        K: Into<EventKind>,
     {
-        for handler in kind.get_readable_vec() {
-            handler(payload, &self.depend_store).await;
+        let handlers = {
+            let guard = self.event_handlers.read().unwrap();
+
+            guard.get(&kind.into()).cloned()
+        };
+        if let Some(handlers) = handlers {
+            for handler in handlers {
+                handler(payload, &self.depend_store).await
+            }
         }
     }
 }

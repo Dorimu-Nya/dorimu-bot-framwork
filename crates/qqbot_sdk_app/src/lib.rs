@@ -6,5 +6,5 @@ pub use app::{
 };
 pub use qqbot_sdk_core::{
     AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, DynEventHandler, EventHandler,
-    EventHandlerFuture, KindRegistryKey, SyncEventHandlerKind,
+    EventHandlerFuture, EventKind, SyncEventHandlerKind,
 };

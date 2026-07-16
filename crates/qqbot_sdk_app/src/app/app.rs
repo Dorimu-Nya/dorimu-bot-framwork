@@ -6,7 +6,9 @@ use super::DependStore;
 use qqbot_sdk_core::openapi::{
     HttpTokenProvider, OpenApi, OpenApiClient, OpenApiConfig, OpenApiPaths, TokenManager,
 };
-use std::sync::Arc;
+use qqbot_sdk_core::{DynEventHandler, EventKind};
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 pub type ApiClient = OpenApi<HttpTokenProvider>;
@@ -19,6 +21,8 @@ pub struct App {
     prod_api_client: Arc<ApiClient>,
     /// 依赖容器
     pub depend_store: DependStore,
+    /// 当前应用实例注册的事件处理器。
+    pub(crate) event_handlers: Arc<RwLock<HashMap<EventKind, Vec<DynEventHandler>>>>,
 }
 
 impl App {
@@ -62,6 +66,7 @@ impl App {
             credential: config.credential.clone(),
             prod_api_client: api,
             depend_store,
+            event_handlers: Arc::new(RwLock::new(HashMap::new())),
         };
 
         #[cfg(feature = "builtin-message-handler")]

@@ -16,8 +16,8 @@ pub use qqbot_sdk_commands::command;
 #[cfg(feature = "app")]
 pub use qqbot_sdk_app::{
     App, AppConfig, AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, CredentialConfig, Depend,
-    DependStore, DynEventHandler, EventHandler, EventHandlerFuture, KindRegistryKey,
-    ListeningConfig, Plugin, SandboxConfig, SyncEventHandlerKind,
+    DependStore, DynEventHandler, EventHandler, EventHandlerFuture, EventKind, ListeningConfig,
+    Plugin, SandboxConfig, SyncEventHandlerKind,
 };
 
 #[cfg(feature = "macros")]

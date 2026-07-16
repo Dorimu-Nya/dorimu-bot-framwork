@@ -54,10 +54,10 @@ impl<'a> FromCommonMessage<'a> for &'a YourStruct {
 
 ```rust
 use qqbot_sdk::{
-    AppConfig, Context, CredentialConfig, ReplyingMessage,
+    AppConfig, CredentialConfig, Depend, ReplyingMessage,
 };
 
-struct CounterContext {
+struct CounterState {
     value: std::sync::atomic::AtomicUsize,
 }
 
@@ -70,8 +70,8 @@ fn echo(words: Option<Vec<String>>) -> ReplyingMessage {
     ReplyingMessage::Text(content)
 }
 
-async fn count(ctx: Context<CounterContext>) -> ReplyingMessage {
-    let current = ctx.value.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+async fn count(state: Depend<CounterState>) -> ReplyingMessage {
+    let current = state.value.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
     ReplyingMessage::Text(format!("Current: {current}"))
 }
 
@@ -80,7 +80,7 @@ let config = AppConfig::new()
         app_id: "YOUR_APP_ID".to_string(),
         secret: "YOUR_SECRET".to_string(),
     })
-    .with_context(Context::new(CounterContext {
+    .with_depend(Depend::new(CounterState {
         value: std::sync::atomic::AtomicUsize::new(0),
     }))
     .with_command("/ping", ping)
@@ -90,7 +90,7 @@ let config = AppConfig::new()
 
 手动注册时的参数提取规则：
 
-- `Context<T>`: 从 `ContextStore` 注入
+- `Depend<T>`: 从 `DependStore` 注入
 - `String` / `Option<String>`: 提取消息文本
 - `Option<Vec<String>>`: 以空格切分消息文本
 - `Option<Vec<Attachment>>`: 提取消息附件
@@ -101,24 +101,31 @@ let config = AppConfig::new()
 - 手动注册目前更适合使用拥有所有权的参数类型
 - 借用类型（如 `Option<Vec<&str>>`、`&dyn CommonMessage`）建议继续使用 `#[command]`
 
-## 上下文存储
+## 依赖注入
 类似于actix/axum的状态注入，可以存储像数据库连接池等对象。
-首先需要在初始化AppConfig的时候使用 `with_context`
+首先需要在初始化 AppConfig 时使用 `with_depend`
 
 ```rust
-pub struct YourContext;
+pub struct YourState;
 
 let config = AppConfig::new();
 //Your other config...
-let config = config.with_context(Context::new(YourContext));
+let config = config.with_depend(Depend::new(YourState));
 ```
 可以在任意上方提及到的宏处理的方法使用，如：
 ```rust
 #[command("/ping")]
-fn has_context(context: Context<YourContext>) {
+fn has_depend(state: Depend<YourState>) {
     // Your biz logic...
 }
 ```
+
+事件 handler 使用相同的注入形式，普通事件参数从 webhook payload 提取：
+
+```rust
+async fn on_message(message: C2cMessage, state: Depend<YourState>) {
+    // Your biz logic...
+}
 
 ## 当前开发目标和进度
 

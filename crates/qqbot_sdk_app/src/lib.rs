@@ -1,8 +1,8 @@
 pub mod app;
 
 pub use app::{
-    ApiClient, App, AppConfig, CredentialConfig, ListeningConfig, Plugin, QQApiOverrides,
-    SandboxConfig,
+    ApiClient, App, AppConfig, CredentialConfig, Depend, DependStore, ListeningConfig, Plugin,
+    QQApiOverrides, SandboxConfig,
 };
 pub use qqbot_sdk_core::{
     AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, DynEventHandler, EventHandler,

@@ -1,9 +1,7 @@
 use crate::app::config::AppConfig;
-use crate::app::{ApiClient, App};
+use crate::app::{ApiClient, App, Depend, DependStore};
 use crate::Plugin;
-use qqbot_sdk_commands::{
-    wrap_command_handle_fn, CommandDef, CommandsStore, ContextStore, ReplyingMessage,
-};
+use qqbot_sdk_commands::{wrap_command_handle_fn, CommandDef, CommandsStore, ReplyingMessage};
 use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
 use qqbot_sdk_core::events::c2c::models::C2cMessage;
 use qqbot_sdk_core::events::common::CommonMessage;
@@ -13,13 +11,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::{error, info, warn};
 
-#[derive(Clone)]
 /// 将命令表适配为消息事件处理器的内置插件。
-pub(crate) struct CommandPlugin {
-    api: Arc<ApiClient>,
-    commands: CommandsStore,
-    context: ContextStore,
-}
+pub(crate) struct CommandPlugin;
 
 impl CommandPlugin {
     /// 从应用配置收集手动注册的命令。
@@ -40,19 +33,27 @@ impl CommandPlugin {
             }
         }
 
-        Self {
-            api: app.get_api_client(),
-            commands: CommandsStore::new(commands),
-            context: app.dependency_container.clone(),
+        let replaced = app.depend_store.insert(CommandsStore::new(commands));
+        if !config.ignore_checking && replaced.is_some() {
+            panic!(
+                "Depend {:?} duplicated",
+                std::any::type_name::<CommandsStore>()
+            );
         }
+
+        Self
     }
 
-    async fn handle_c2c(&self, message: C2cMessage) {
-        if let Some(reply) = self.handle_message(&message).await {
+    async fn handle_c2c(
+        message: C2cMessage,
+        api: Depend<ApiClient>,
+        commands: Depend<CommandsStore>,
+        dependencies: DependStore,
+    ) {
+        if let Some(reply) = Self::handle_message(&message, &commands, &dependencies).await {
             let body =
                 reply.to_request(Some(message.id.clone()), Some(message.msg_seq.unwrap_or(1)));
-            let result = self
-                .api
+            let result = api
                 .c2c_messages()
                 .send_typed(&message.author.user_openid, &body)
                 .await;
@@ -60,12 +61,16 @@ impl CommandPlugin {
         }
     }
 
-    async fn handle_group(&self, message: GroupAtMessage) {
-        if let Some(reply) = self.handle_message(&message).await {
+    async fn handle_group(
+        message: GroupAtMessage,
+        api: Depend<ApiClient>,
+        commands: Depend<CommandsStore>,
+        dependencies: DependStore,
+    ) {
+        if let Some(reply) = Self::handle_message(&message, &commands, &dependencies).await {
             let body =
                 reply.to_request(Some(message.id.clone()), Some(message.msg_seq.unwrap_or(1)));
-            let result = self
-                .api
+            let result = api
                 .group_messages()
                 .send_typed(&message.group_openid, &body)
                 .await;
@@ -73,15 +78,19 @@ impl CommandPlugin {
         }
     }
 
-    async fn handle_message(&self, message: &dyn CommonMessage) -> Option<ReplyingMessage> {
+    async fn handle_message(
+        message: &dyn CommonMessage,
+        commands: &CommandsStore,
+        dependencies: &DependStore,
+    ) -> Option<ReplyingMessage> {
         let content = message.get_content().as_deref()?;
         let command = content.split_whitespace().next()?;
-        let Some(handler) = self.commands.get(command) else {
+        let Some(handler) = commands.get(command) else {
             warn!("未知指令: {}", content);
             return None;
         };
 
-        match handler(message, &self.context).await {
+        match handler(message, dependencies).await {
             Ok(reply) => reply,
             Err(err) => {
                 error!("处理指令{}出错: {}", content, err);
@@ -93,21 +102,8 @@ impl CommandPlugin {
 
 impl Plugin for CommandPlugin {
     fn register(&self, app: &App) {
-        let c2c_plugin = self.clone();
-        app.registe_event_handler(
-            C2cEventTypeKind::C2cMessageCreate,
-            move |message: C2cMessage| {
-                let plugin = c2c_plugin.clone();
-                async move { plugin.handle_c2c(message).await }
-            },
-        );
+        app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, Self::handle_c2c);
 
-        app.registe_event_handler(GroupEventTypeKind::GroupAtMessageCreate, {
-            let plugin = self.clone();
-            move |message: GroupAtMessage| {
-                let plugin = plugin.clone();
-                async move { plugin.handle_group(message).await }
-            }
-        });
+        app.registe_event_handler(GroupEventTypeKind::GroupAtMessageCreate, Self::handle_group);
     }
 }

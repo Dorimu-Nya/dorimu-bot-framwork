@@ -1,3 +1,4 @@
+use crate::dependency::DependencyProvider;
 use crate::events::payload::{DispatchPayload, FromDispatchPayload};
 use std::future::Future;
 use std::pin::Pin;
@@ -7,8 +8,34 @@ use std::sync::Arc;
 pub type EventHandlerFuture<'a> = Pin<Box<dyn Future<Output = ()> + Send + 'a>>;
 
 /// 擦除具体参数后的事件处理器，用于保存在宏生成的静态 Kind 容器中。
-pub type DynEventHandler =
-    Arc<dyn for<'a> Fn(&'a DispatchPayload) -> EventHandlerFuture<'a> + Send + Sync>;
+pub type DynEventHandler = Arc<
+    dyn for<'a> Fn(&'a DispatchPayload, &'a dyn DependencyProvider) -> EventHandlerFuture<'a>
+        + Send
+        + Sync,
+>;
+
+/// 标记从事件分发载荷中提取的事件参数。
+pub struct PayloadEventArg;
+
+/// 将事件分发载荷和依赖解析器转换为一个事件参数。
+pub trait FromEventArg<Source>: Sized {
+    fn from_event_arg(
+        payload: &DispatchPayload,
+        dependencies: &dyn DependencyProvider,
+    ) -> Option<Self>;
+}
+
+impl<T> FromEventArg<PayloadEventArg> for T
+where
+    T: FromDispatchPayload,
+{
+    fn from_event_arg(
+        payload: &DispatchPayload,
+        _dependencies: &dyn DependencyProvider,
+    ) -> Option<Self> {
+        T::from(payload)
+    }
+}
 
 /// 同步事件函数的适配标记。
 pub struct SyncEventHandlerKind;
@@ -32,7 +59,7 @@ macro_rules! impl_event_handler {
             F: Fn() + Send + Sync + 'static,
         {
             fn into_dyn(self) -> DynEventHandler {
-                Arc::new(move |_| {
+                Arc::new(move |_, _| {
                     self();
                     Box::pin(async {})
                 })
@@ -45,18 +72,18 @@ macro_rules! impl_event_handler {
             Fut: Future<Output = ()> + Send + 'static,
         {
             fn into_dyn(self) -> DynEventHandler {
-                Arc::new(move |_| Box::pin(self()))
+                Arc::new(move |_, _| Box::pin(self()))
             }
         }
     };
-    ($( $ty:ident => $var:ident ),+ $(,)?) => {
+    ($( $ty:ident : $source:ident => $var:ident ),+ $(,)?) => {
         impl<F, $($ty),+> EventHandler<($($ty,)+), BorrowedEventSyncHandlerKind> for F
         where
             F: Fn($(& $ty),+) + Send + Sync + 'static,
             $($ty: FromDispatchPayload + Send + Sync + 'static,)+
         {
             fn into_dyn(self) -> DynEventHandler {
-                Arc::new(move |payload| {
+                Arc::new(move |payload, _dependencies| {
                     $(
                         let Some($var) = <$ty as FromDispatchPayload>::from(payload) else {
                             return Box::pin(async {});
@@ -68,16 +95,40 @@ macro_rules! impl_event_handler {
             }
         }
 
-        impl<F, Fut, $($ty),+> EventHandler<($($ty,)+), AsyncEventHandlerKind> for F
+        impl<F, $($ty, $source),+> EventHandler<($(($ty, $source),)+), SyncEventHandlerKind> for F
+        where
+            F: Fn($($ty),+) + Send + Sync + 'static,
+            $($ty: FromEventArg<$source> + Send + 'static,)+
+        {
+            fn into_dyn(self) -> DynEventHandler {
+                Arc::new(move |payload, dependencies| {
+                    $(
+                        let Some($var) = <$ty as FromEventArg<$source>>::from_event_arg(
+                            payload,
+                            dependencies,
+                        ) else {
+                            return Box::pin(async {});
+                        };
+                    )+
+                    self($($var),+);
+                    Box::pin(async {})
+                })
+            }
+        }
+
+        impl<F, Fut, $($ty, $source),+> EventHandler<($(($ty, $source),)+), AsyncEventHandlerKind> for F
         where
             F: Fn($($ty),+) -> Fut + Send + Sync + 'static,
             Fut: Future<Output = ()> + Send + 'static,
-            $($ty: FromDispatchPayload + Send + Sync + 'static,)+
+            $($ty: FromEventArg<$source> + Send + 'static,)+
         {
             fn into_dyn(self) -> DynEventHandler {
-                Arc::new(move |payload| {
+                Arc::new(move |payload, dependencies| {
                     $(
-                        let Some($var) = <$ty as FromDispatchPayload>::from(payload) else {
+                        let Some($var) = <$ty as FromEventArg<$source>>::from_event_arg(
+                            payload,
+                            dependencies,
+                        ) else {
                             return Box::pin(async {});
                         };
                     )+
@@ -90,11 +141,11 @@ macro_rules! impl_event_handler {
 }
 
 impl_event_handler!();
-impl_event_handler!(A1 => a1);
-impl_event_handler!(A1 => a1, A2 => a2);
-impl_event_handler!(A1 => a1, A2 => a2, A3 => a3);
-impl_event_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4);
-impl_event_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5);
-impl_event_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6);
-impl_event_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6, A7 => a7);
-impl_event_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6, A7 => a7, A8 => a8);
+impl_event_handler!(A1: S1 => a1);
+impl_event_handler!(A1: S1 => a1, A2: S2 => a2);
+impl_event_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3);
+impl_event_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4);
+impl_event_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5);
+impl_event_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5, A6: S6 => a6);
+impl_event_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5, A6: S6 => a6, A7: S7 => a7);
+impl_event_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5, A6: S6 => a6, A7: S7 => a7, A8: S8 => a8);

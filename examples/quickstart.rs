@@ -8,13 +8,13 @@ use qqbot_sdk::models::UploadMediaRequest;
 use qqbot_sdk::CommonMessage;
 use qqbot_sdk::ReplyingMessage::Text;
 use qqbot_sdk::{
-    run_application, AppConfig, Context, CredentialConfig, HttpTokenProvider, OpenApi,
+    run_application, AppConfig, CredentialConfig, Depend, HttpTokenProvider, OpenApi,
     ReplyingMessage, ReplyingMessage::Media,
 };
 use qqbot_sdk_macros::command;
 use std::fs;
 use std::sync::atomic::{AtomicI16, Ordering};
-struct CustomContext {
+struct CustomState {
     pub value: AtomicI16,
 }
 
@@ -22,7 +22,7 @@ struct HelloCmd {
     location: String,
 }
 
-impl CustomContext {
+impl CustomState {
     fn new() -> Self {
         Self {
             value: AtomicI16::new(0),
@@ -61,7 +61,7 @@ async fn main() -> std::io::Result<()> {
         .bind_addr("0.0.0.0:3000")
         .webhook_path("/webhook")
         .prod_url_override("https://sandbox.api.sgroup.qq.com")
-        .with_context(Context::new(CustomContext::new()))
+        .with_depend(Depend::new(CustomState::new()))
         .with_command("/hi1", move || earth_hi.say_hi())
         .with_command("/hi2", move || moon_hi.say_hi());
 
@@ -82,14 +82,14 @@ fn asd(msg: Option<Vec<String>>) -> ReplyingMessage {
 }
 
 #[command("/couting")]
-fn counting(context: Context<CustomContext>) -> ReplyingMessage {
-    let v = context.value.load(Ordering::SeqCst);
-    context.plus();
+fn counting(state: Depend<CustomState>) -> ReplyingMessage {
+    let v = state.value.load(Ordering::SeqCst);
+    state.plus();
     Text(String::from("Current ") + String::from(v.to_string()).as_str())
 }
 
 #[command("/me")]
-async fn me(api: Context<OpenApi<HttpTokenProvider>>) -> qqbot_sdk::Result<ReplyingMessage> {
+async fn me(api: Depend<OpenApi<HttpTokenProvider>>) -> qqbot_sdk::Result<ReplyingMessage> {
     let (status, user) = api.users().me().await?;
     Ok(Text(format!("status: {}\nme: {:#?}", status, user)))
 }
@@ -180,7 +180,7 @@ fn markdown() -> ReplyingMessage {
 
 #[command("/image")]
 async fn image(
-    api: Context<OpenApi<HttpTokenProvider>>,
+    api: Depend<OpenApi<HttpTokenProvider>>,
     msg: &dyn CommonMessage,
 ) -> ReplyingMessage {
     let image_bytes = fs::read("/root/image.jpg").unwrap();

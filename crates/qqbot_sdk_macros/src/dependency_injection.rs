@@ -1,12 +1,12 @@
 use quote::quote;
 use syn::{GenericArgument, PathArguments, Type, TypePath};
 
-/// 识别 是否 Context<T> 形参并返回 T。
-pub fn extract_context_inner_type(ty: &Type) -> Option<Type> {
+/// 当参数是 `Depend<T>` 时返回其中的类型。
+pub fn extract_depend_inner_type(ty: &Type) -> Option<Type> {
     let Type::Path(type_path) = ty else {
         return None;
     };
-    if !is_context_path(type_path) {
+    if !is_depend_path(type_path) {
         return None;
     }
     let segment = type_path.path.segments.last()?;
@@ -19,18 +19,18 @@ pub fn extract_context_inner_type(ty: &Type) -> Option<Type> {
     Some(inner.clone())
 }
 
-/// 封装 Context形参
-pub fn quoting_context_param(inner_type: Type) -> proc_macro2::TokenStream {
+/// 生成从运行时解析器中解析 `Depend<T>` 的表达式。
+pub fn quoting_depend_param(inner_type: Type) -> proc_macro2::TokenStream {
     quote! {
-        __store.get_context::<#inner_type>()
+        qqbot_sdk::Depend::<#inner_type>::from_provider(__dependencies)
     }
 }
 
-fn is_context_path(type_path: &TypePath) -> bool {
+fn is_depend_path(type_path: &TypePath) -> bool {
     type_path
         .path
         .segments
         .last()
-        .map(|segment| segment.ident == "Context")
+        .map(|segment| segment.ident == "Depend")
         .unwrap_or(false)
 }

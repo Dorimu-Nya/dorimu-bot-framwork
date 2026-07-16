@@ -964,6 +964,7 @@ dependencies = [
  "qqbot_sdk_commands",
  "qqbot_sdk_core",
  "qqbot_sdk_macros",
+ "serde_json",
  "tokio",
  "tracing-subscriber",
 ]

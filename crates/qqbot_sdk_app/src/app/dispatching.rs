@@ -40,22 +40,25 @@ impl App {
     /// 处理 opcode 为 0 的事件分发。
     async fn dispatch_event(&self, payload: DispatchPayload) {
         match &payload.event {
-            Event::C2cEventType(event) => dispatch_kind(event.to_kind(), &payload).await,
-            Event::GroupEventType(event) => dispatch_kind(event.to_kind(), &payload).await,
-            Event::GuildEventType(event) => dispatch_kind(event.to_kind(), &payload).await,
-            Event::ForumEventType(event) => dispatch_kind(event.to_kind(), &payload).await,
-            Event::InteractionEventType(event) => dispatch_kind(event.to_kind(), &payload).await,
+            Event::C2cEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::GroupEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::GuildEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::ForumEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::InteractionEventType(event) => {
+                self.dispatch_kind(event.to_kind(), &payload).await
+            }
             Event::MessageReactionEventType(event) => {
-                dispatch_kind(event.to_kind(), &payload).await
+                self.dispatch_kind(event.to_kind(), &payload).await
             }
         }
     }
-}
-async fn dispatch_kind<K>(kind: K, payload: &DispatchPayload)
-where
-    K: KindRegistryKey,
-{
-    for handler in kind.get_readable_vec() {
-        handler(payload).await;
+
+    async fn dispatch_kind<K>(&self, kind: K, payload: &DispatchPayload)
+    where
+        K: KindRegistryKey,
+    {
+        for handler in kind.get_readable_vec() {
+            handler(payload, &self.depend_store).await;
+        }
     }
 }

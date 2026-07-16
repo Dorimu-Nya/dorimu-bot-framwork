@@ -1,5 +1,5 @@
-use crate::context_injection;
-use crate::context_injection::quoting_context_param;
+use crate::dependency_injection;
+use crate::dependency_injection::quoting_depend_param;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse::Parse, parse::ParseStream, FnArg, ItemFn, LitStr, Result};
@@ -49,9 +49,9 @@ pub fn command_impl(args: CommandArgs, func: ItemFn) -> TokenStream {
             }
             FnArg::Typed(typed) => {
                 let ty = &typed.ty;
-                // 如果是Context
-                if let Some(inner_type) = context_injection::extract_context_inner_type(ty) {
-                    call_args.push(quoting_context_param(inner_type));
+                // Depend<T> 参数从运行时解析器中获取。
+                if let Some(inner_type) = dependency_injection::extract_depend_inner_type(ty) {
+                    call_args.push(quoting_depend_param(inner_type));
                 } else {
                     // 从消息体转换参数
                     let arg_name = format_ident!("__arg_{}", index);
@@ -85,7 +85,7 @@ pub fn command_impl(args: CommandArgs, func: ItemFn) -> TokenStream {
             // 包装函数：接收消息和容器，返回 Future
             fn #wrapper_name<'a>(
                 __message: &'a dyn qqbot_sdk::CommonMessage,
-                __store: &'a qqbot_sdk::ContextStore,
+                __dependencies: &'a dyn qqbot_sdk::DependencyProvider,
             ) -> qqbot_sdk::CommandHandleFuture<'a> {
                 ::std::boxed::Box::pin(async move {
                     #(#param_extractions)*

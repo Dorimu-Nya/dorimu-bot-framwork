@@ -5,6 +5,11 @@ edition.workspace = true
 license.workspace = true
 description = "QQ bot SDK (webhook-first)"
 
+[[example]]
+name = "quickstart"
+path = "../../examples/quickstart.rs"
+required-features = ["app", "macros", "axum-runner", "builtin-message-handler"]
+
 [features]
 default = ["app", "macros", "axum-runner", "builtin-message-handler"]
 events = ["qqbot_sdk_core/events"]
@@ -27,5 +32,6 @@ qqbot_sdk_macros = { path = "../qqbot_sdk_macros", optional = true }
 
 [dev-dependencies]
 base64.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
 tracing-subscriber = { workspace = true, features = ["fmt", "env-filter"] }

@@ -1,4 +1,5 @@
-use qqbot_sdk_commands::{Context, ContextStore, DynCommandHandleFn};
+use super::{Depend, DependStore};
+use qqbot_sdk_commands::DynCommandHandleFn;
 use serde::Deserialize;
 use std::any::Any;
 
@@ -83,7 +84,7 @@ pub struct AppConfig {
     pub ignore_checking: bool,
     /// 上下文存储
     #[serde(skip)]
-    pub contexts: Vec<Box<dyn Fn(&ContextStore) -> Option<&str> + Send + Sync>>,
+    pub depends: Vec<Box<dyn Fn(&DependStore) -> Option<&'static str> + Send + Sync>>,
     /// 手动注册的命令处理函数
     #[serde(skip)]
     pub commands: Vec<(&'static str, DynCommandHandleFn)>,
@@ -100,7 +101,7 @@ impl Default for AppConfig {
             sandbox_config: Default::default(),
             api_overrides: Default::default(),
             ignore_checking: false,
-            contexts: vec![],
+            depends: vec![],
             commands: vec![],
             // event_handlers: EventHandlers::default(),
         }
@@ -133,9 +134,9 @@ impl AppConfig {
         self
     }
 
-    pub fn with_context<T: Any + Send + Sync + 'static>(mut self, context: Context<T>) -> Self {
-        self.contexts.push(Box::new(move |store: &ContextStore| {
-            store.insert_arc(context.as_arc())
+    pub fn with_depend<T: Any + Send + Sync + 'static>(mut self, depend: Depend<T>) -> Self {
+        self.depends.push(Box::new(move |store: &DependStore| {
+            store.insert_arc(depend.as_arc())
         }));
         self
     }

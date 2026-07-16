@@ -1,5 +1,5 @@
 mod command;
-mod context_injection;
+mod dependency_injection;
 
 use proc_macro::TokenStream;
 use syn::parse_macro_input;
@@ -7,7 +7,7 @@ use syn::parse_macro_input;
 /// Command 宏
 ///
 /// 用于定义命令处理函数。宏会自动：
-/// 1. 扫描函数参数，识别 State<T> 依赖
+/// 1. 扫描函数参数，识别 Depend<T> 依赖
 /// 2. 生成从容器中获取依赖的代码
 /// 3. 注册命令到全局命令表
 ///
@@ -19,7 +19,7 @@ use syn::parse_macro_input;
 /// }
 ///
 /// #[command("/status")]
-/// async fn status(State(app): State<App>) -> ReplyingMessage {
+/// async fn status(app: Depend<AppState>) -> ReplyingMessage {
 ///     // app 会自动从容器中注入
 ///     ReplyingMessage::Text(format!("Bot ID: {}", app.config.app_id))
 /// }

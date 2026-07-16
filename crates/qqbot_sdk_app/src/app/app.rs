@@ -1,8 +1,8 @@
 #[cfg(feature = "builtin-message-handler")]
 use super::command_plugin::CommandPlugin;
 use super::AppConfig;
-use super::ContextStore;
 use super::CredentialConfig;
+use super::DependStore;
 use qqbot_sdk_core::openapi::{
     HttpTokenProvider, OpenApi, OpenApiClient, OpenApiConfig, OpenApiPaths, TokenManager,
 };
@@ -18,7 +18,7 @@ pub struct App {
     /// 生产环境的 api 客户端
     prod_api_client: Arc<ApiClient>,
     /// 依赖容器
-    pub dependency_container: ContextStore,
+    pub depend_store: DependStore,
 }
 
 impl App {
@@ -39,29 +39,29 @@ impl App {
         // api 客户端初始化 end
 
         // 初始化ioc
-        let container = ContextStore::new();
+        let depend_store = DependStore::new();
         if !config.ignore_checking {
-            if let Some(context) = container.insert_arc(Arc::clone(&api)) {
-                panic!("Context {:?} duplicated", context);
+            if let Some(depend) = depend_store.insert_arc(Arc::clone(&api)) {
+                panic!("Depend {:?} duplicated", depend);
             }
         } else {
-            container.insert_arc(Arc::clone(&api));
+            depend_store.insert_arc(Arc::clone(&api));
         }
 
-        for register in &config.contexts {
+        for register in &config.depends {
             if !config.ignore_checking {
-                if let Some(context) = register(&container) {
-                    panic!("Context {:?} duplicated", context);
+                if let Some(depend) = register(&depend_store) {
+                    panic!("Depend {:?} duplicated", depend);
                 }
             } else {
-                register(&container);
+                register(&depend_store);
             }
         }
 
         let app = Self {
             credential: config.credential.clone(),
             prod_api_client: api,
-            dependency_container: container,
+            depend_store,
         };
 
         #[cfg(feature = "builtin-message-handler")]

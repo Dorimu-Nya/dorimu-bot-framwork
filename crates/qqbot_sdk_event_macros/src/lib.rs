@@ -45,7 +45,7 @@ fn event_kind_impl(event_enum: ItemEnum) -> proc_macro2::TokenStream {
         #event_enum
 
         /// 与原事件枚举一一对应、不携带事件载荷的注册键。
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
         pub enum #kind_ident {
             #(#variants),*
         }

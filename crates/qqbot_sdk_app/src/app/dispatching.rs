@@ -1,11 +1,11 @@
-use super::App;
+use super::QQBotApp;
 use qqbot_sdk_core::events::event::Event;
 use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
 use qqbot_sdk_core::events::validation::{ValidationRequest, ValidationResponse};
 use qqbot_sdk_core::EventKind;
 use tracing::debug;
 
-impl App {
+impl QQBotApp {
     /// Webhook 的第一层 opcode 分发。
     pub async fn webhook_handler(&self, payload: WebhookPayload) -> Option<ValidationResponse> {
         debug!("收到Webhook事件: {:?}", payload);

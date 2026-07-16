@@ -1,7 +1,7 @@
 use qqbot_sdk::events::c2c::event_type::C2cEventTypeKind;
 use qqbot_sdk::events::c2c::models::C2cMessage;
 use qqbot_sdk::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk::{App, AppConfig, Depend, Plugin, PluginRegistrar};
+use qqbot_sdk::{QQBotApp, AppConfig, Depend, Plugin, PluginRegistrar};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct HandlerState {
@@ -21,8 +21,8 @@ impl Plugin for EventPlugin {
     }
 }
 
-fn app() -> App {
-    App::new(AppConfig::new().with_depend(Depend::new(HandlerState {
+fn app() -> QQBotApp {
+    QQBotApp::new(AppConfig::new().with_depend(Depend::new(HandlerState {
         called: AtomicUsize::new(0),
     })))
 }

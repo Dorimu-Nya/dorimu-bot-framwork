@@ -26,7 +26,7 @@ pub use qqbot_sdk_commands::command;
 
 #[cfg(feature = "app")]
 pub use qqbot_sdk_app::{
-    App, AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig,
+    QQBotApp, AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig,
 };
 
 #[cfg(feature = "macros")]

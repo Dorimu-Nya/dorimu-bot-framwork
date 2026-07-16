@@ -1,7 +1,7 @@
 pub mod app;
 
 pub use app::{
-    ApiClient, App, AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig,
+    ApiClient, QQBotApp, AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig,
 };
 pub use qqbot_sdk_core::EventKind;
 pub use qqbot_sdk_runtime::{

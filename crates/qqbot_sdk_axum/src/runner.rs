@@ -1,6 +1,6 @@
 use axum::routing::any;
 use axum::{Json, Router};
-use qqbot_sdk_app::{App, AppConfig};
+use qqbot_sdk_app::{QQBotApp, AppConfig};
 use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
 use qqbot_sdk_core::events::c2c::models::C2cMessage;
 use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
@@ -36,7 +36,7 @@ pub async fn run_application_with_router(
     let webhook_path = config.listening.webhook_path.clone();
     let bind_addr = config.listening.bind_addr.clone();
 
-    let app = Arc::new(App::new(config));
+    let app = Arc::new(QQBotApp::new(config));
 
     app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn1);
     app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn2);

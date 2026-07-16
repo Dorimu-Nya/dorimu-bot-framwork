@@ -10,7 +10,7 @@ use std::time::Duration;
 pub type ApiClient = OpenApi<HttpTokenProvider>;
 
 #[derive(Clone)]
-pub struct App {
+pub struct QQBotApp {
     /// 票据配置
     pub(crate) credential: CredentialConfig,
     /// 生产环境的 api 客户端
@@ -21,7 +21,7 @@ pub struct App {
     pub(crate) event_handlers: EventHandlerRegistry,
 }
 
-impl App {
+impl QQBotApp {
     /// 根据应用配置初始化 API、依赖容器、命令插件和事件处理器。
     pub fn new(config: AppConfig) -> Self {
         // api 客户端初始化

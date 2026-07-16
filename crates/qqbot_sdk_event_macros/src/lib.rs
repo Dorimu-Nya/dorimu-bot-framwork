@@ -2,15 +2,6 @@ use heck::ToShoutySnakeCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, ItemEnum};
-/// 为事件枚举生成 Kind 对应的处理器容器。
-///
-/// 参数是顶层 `Event` 对应的变体路径，例如 `Event::C2cEventType`。
-// #[proc_macro_attribute]
-// pub fn event_handlers(args: TokenStream, input: TokenStream) -> TokenStream {
-//     let args = parse_macro_input!(args as EventHandlersArgs);
-//     let event_enum = parse_macro_input!(input as ItemEnum);
-//     event_handlers_impl(args.parent_variant, event_enum).into()
-// }
 
 /// 为事件枚举生成无载荷 Kind 枚举及其单向转换实现。
 #[proc_macro_attribute]
@@ -107,65 +98,3 @@ fn event_kind_impl(event_enum: ItemEnum) -> proc_macro2::TokenStream {
 
     }
 }
-
-// fn event_handlers_impl(
-//     parent_variant: Path,
-//     event_enum: ItemEnum,
-// ) -> proc_macro2::TokenStream {
-//     let enum_ident = &event_enum.ident;
-//     let kind_ident = format_ident!("{}Kind", enum_ident);
-//     let handlers_ident = format_ident!("{}Handlers", enum_ident);
-//     let container_field = format_ident!("{}", camel_to_snake(&enum_ident.to_string()));
-
-//     quote! {
-//         #event_enum
-
-//         impl crate::app::events::EventKind for #kind_ident {
-//             fn register(self, handlers: &mut crate::app::events::EventHandlers, handler: crate::app::events::DynEventHandler) {
-//                 handlers.#container_field.register(self, handler);
-//             }
-//         }
-
-//         /// 此事件枚举对应的处理器容器，按 Kind 分组保存处理器。
-//         #[derive(Clone, Default)]
-//         pub(crate) struct #handlers_ident {
-//             handlers: ::std::collections::HashMap<#kind_ident, ::std::vec::Vec<crate::app::events::DynEventHandler>>,
-//         }
-
-//         impl #handlers_ident {
-//             pub(crate) fn register(&mut self, kind: #kind_ident, handler: crate::app::events::DynEventHandler) {
-//                 self.handlers.entry(kind).or_default().push(handler);
-//             }
-
-//             pub(crate) async fn dispatch(
-//                 &self,
-//                 event: &crate::events::event::Event,
-//                 payload: &crate::events::payload::DispatchPayload,
-//             ) {
-//                 if let #parent_variant(event) = event {
-//                     let kind = #kind_ident::from(event);
-//                     if let Some(handlers) = self.handlers.get(&kind) {
-//                         for handler in handlers {
-//                             handler(payload).await;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-// fn camel_to_snake(value: &str) -> String {
-//     let mut result = String::with_capacity(value.len());
-//     let mut previous_is_lower_or_digit = false;
-
-//     for character in value.chars() {
-//         if character.is_uppercase() && previous_is_lower_or_digit {
-//             result.push('_');
-//         }
-//         result.extend(character.to_lowercase());
-//         previous_is_lower_or_digit = character.is_lowercase() || character.is_ascii_digit();
-//     }
-
-//     result
-// }

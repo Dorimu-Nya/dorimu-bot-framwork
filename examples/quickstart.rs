@@ -9,11 +9,12 @@ use qqbot_sdk::models::UploadMediaRequest;
 use qqbot_sdk::CommonMessage;
 use qqbot_sdk::ReplyingMessage::Text;
 use qqbot_sdk::{
-    run_application, AppConfig, CredentialConfig, Depend, HttpTokenProvider, OpenApi,
-    ReplyingMessage, ReplyingMessage::Media,
+    run_application, AppConfig, CommandPlugin, CredentialConfig, Depend, HttpTokenProvider,
+    OpenApi, ReplyingMessage, ReplyingMessage::Media,
 };
 use std::fs;
 use std::sync::atomic::{AtomicI16, Ordering};
+
 struct CustomState {
     pub value: AtomicI16,
 }
@@ -52,6 +53,9 @@ async fn main() -> std::io::Result<()> {
     let moon_hi = HelloCmd {
         location: "Moon".to_string(),
     };
+    let command_plugin = CommandPlugin::new()
+        .with_command("/hi1", move || earth_hi.say_hi())
+        .with_command("/hi2", move || moon_hi.say_hi());
 
     let config = AppConfig::new()
         .credential(CredentialConfig {
@@ -62,8 +66,7 @@ async fn main() -> std::io::Result<()> {
         .webhook_path("/webhook")
         .prod_url_override("https://sandbox.api.sgroup.qq.com")
         .with_depend(Depend::new(CustomState::new()))
-        .with_command("/hi1", move || earth_hi.say_hi())
-        .with_command("/hi2", move || moon_hi.say_hi());
+        .with_plugin(command_plugin);
 
     run_application(config).await
 }
@@ -72,6 +75,7 @@ async fn main() -> std::io::Result<()> {
 fn ping() -> ReplyingMessage {
     Text(String::from("Pong!"))
 }
+
 #[command("/im")]
 fn asd(msg: Option<Vec<String>>) -> ReplyingMessage {
     if let Some(msg) = msg {

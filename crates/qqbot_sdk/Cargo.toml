@@ -8,23 +8,26 @@ description = "QQ bot SDK (webhook-first)"
 [[example]]
 name = "quickstart"
 path = "../../examples/quickstart.rs"
-required-features = ["app", "macros", "axum-runner", "builtin-message-handler"]
+required-features = ["app", "macros", "axum-runner", "command-plugin"]
 
 [features]
-default = ["app", "macros", "axum-runner", "builtin-message-handler"]
+default = ["app", "macros", "axum-runner", "command-plugin"]
 events = ["qqbot_sdk_core/events"]
 openapi = ["qqbot_sdk_core/openapi"]
 signature = ["qqbot_sdk_core/signature"]
-app = ["commands", "dep:qqbot_sdk_app"]
-commands = ["dep:qqbot_sdk_commands"]
+runtime = ["events", "dep:qqbot_sdk_runtime"]
+app = ["runtime", "openapi", "signature", "dep:qqbot_sdk_app"]
+commands = ["runtime", "openapi", "dep:qqbot_sdk_commands"]
 macros = ["commands", "dep:inventory"]
+command-plugin = ["app", "commands", "dep:inventory", "dep:tracing"]
 axum-runner = ["app", "dep:qqbot_sdk_axum"]
-builtin-message-handler = ["app", "qqbot_sdk_app/builtin-message-handler"]
-full = ["app", "macros", "axum-runner"]
+full = ["app", "macros", "axum-runner", "command-plugin"]
 
 [dependencies]
 inventory = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
 qqbot_sdk_core = { path = "../qqbot_sdk_core", default-features = false }
+qqbot_sdk_runtime = { path = "../qqbot_sdk_runtime", optional = true }
 qqbot_sdk_app = { path = "../qqbot_sdk_app", optional = true }
 qqbot_sdk_axum = { path = "../qqbot_sdk_axum", optional = true }
 qqbot_sdk_commands = { path = "../qqbot_sdk_commands/qqbot_sdk_commands", optional = true }

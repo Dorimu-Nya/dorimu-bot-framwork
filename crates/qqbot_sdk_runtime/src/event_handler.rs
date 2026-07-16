@@ -1,5 +1,5 @@
 use crate::dependency::DependencyProvider;
-use crate::events::payload::{DispatchPayload, FromDispatchPayload};
+use qqbot_sdk_core::{DispatchPayload, FromDispatchPayload};
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -7,7 +7,7 @@ use std::sync::Arc;
 /// 事件处理器统一使用的异步返回类型。
 pub type EventHandlerFuture<'a> = Pin<Box<dyn Future<Output = ()> + Send + 'a>>;
 
-/// 擦除具体参数后的事件处理器，用于保存在宏生成的静态 Kind 容器中。
+/// 擦除具体参数后的事件处理器，用于保存在事件注册表中。
 pub type DynEventHandler = Arc<
     dyn for<'a> Fn(&'a DispatchPayload, &'a dyn DependencyProvider) -> EventHandlerFuture<'a>
         + Send

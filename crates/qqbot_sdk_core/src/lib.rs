@@ -4,13 +4,8 @@ extern crate self as qqbot_sdk_core;
 
 extern crate self as qqbot_sdk;
 
-pub mod dependency;
-pub use dependency::{resolve_dependency, DependencyProvider};
-
 #[cfg(feature = "events")]
 pub mod events;
-#[cfg(feature = "events")]
-pub use crate::events::common::{CommonMessage, FromCommonMessage, MessageFrom};
 #[cfg(feature = "events")]
 pub use crate::events::event::EventKind;
 #[cfg(feature = "events")]
@@ -36,11 +31,3 @@ pub use openapi::{
 pub mod signature;
 #[cfg(feature = "signature")]
 pub use signature::sign_webhook_validation;
-
-#[cfg(feature = "events")]
-pub mod event_handler;
-#[cfg(feature = "events")]
-pub use event_handler::{
-    AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, DynEventHandler, EventHandler,
-    EventHandlerFuture, FromEventArg, PayloadEventArg, SyncEventHandlerKind,
-};

@@ -1,0 +1,9 @@
+[package]
+name = "qqbot_sdk_runtime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Event runtime and native plugin API for qqbot_sdk"
+
+[dependencies]
+qqbot_sdk_core = { path = "../qqbot_sdk_core", default-features = false, features = ["events"] }

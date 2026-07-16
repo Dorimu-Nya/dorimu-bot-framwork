@@ -2,22 +2,31 @@
 
 extern crate self as qqbot_sdk;
 
+#[cfg(feature = "command-plugin")]
+mod command_plugin;
+
+#[allow(unused_imports)]
 pub use qqbot_sdk_core::*;
+
+#[cfg(feature = "runtime")]
+pub use qqbot_sdk_runtime::*;
 
 #[cfg(feature = "commands")]
 pub use qqbot_sdk_commands::{
-    CommandDef, CommandHandleFn, CommandHandleFuture, CommandHandler, CommandOutput,
-    DynCommandHandleFn, FromCommandArg, ReplyingMessage, ReplyingType,
+    CommandDef, CommandHandleFn, CommandHandleFuture, CommandHandler, CommandOutput, CommonMessage,
+    DynCommandHandleFn, FromCommandArg, FromCommonMessage, MessageFrom, ReplyingMessage,
+    ReplyingType,
 };
+
+#[cfg(feature = "command-plugin")]
+pub use command_plugin::CommandPlugin;
 
 #[cfg(feature = "macros")]
 pub use qqbot_sdk_commands::command;
 
 #[cfg(feature = "app")]
 pub use qqbot_sdk_app::{
-    App, AppConfig, AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, CredentialConfig, Depend,
-    DependStore, DynEventHandler, EventHandler, EventHandlerFuture, EventKind, ListeningConfig,
-    Plugin, SandboxConfig, SyncEventHandlerKind,
+    App, AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig,
 };
 
 #[cfg(feature = "macros")]

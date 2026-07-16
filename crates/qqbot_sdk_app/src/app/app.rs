@@ -1,14 +1,10 @@
-#[cfg(feature = "builtin-message-handler")]
-use super::command_plugin::CommandPlugin;
 use super::AppConfig;
 use super::CredentialConfig;
-use super::DependStore;
 use qqbot_sdk_core::openapi::{
     HttpTokenProvider, OpenApi, OpenApiClient, OpenApiConfig, OpenApiPaths, TokenManager,
 };
-use qqbot_sdk_core::{DynEventHandler, EventKind};
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use qqbot_sdk_runtime::{DependStore, EventHandlerRegistry};
+use std::sync::Arc;
 use std::time::Duration;
 
 pub type ApiClient = OpenApi<HttpTokenProvider>;
@@ -22,7 +18,7 @@ pub struct App {
     /// 依赖容器
     pub depend_store: DependStore,
     /// 当前应用实例注册的事件处理器。
-    pub(crate) event_handlers: Arc<RwLock<HashMap<EventKind, Vec<DynEventHandler>>>>,
+    pub(crate) event_handlers: EventHandlerRegistry,
 }
 
 impl App {
@@ -66,11 +62,12 @@ impl App {
             credential: config.credential.clone(),
             prod_api_client: api,
             depend_store,
-            event_handlers: Arc::new(RwLock::new(HashMap::new())),
+            event_handlers: EventHandlerRegistry::new(),
         };
 
-        #[cfg(feature = "builtin-message-handler")]
-        app.registe_plugin(&CommandPlugin::from_config(&config, &app));
+        for plugin in &config.plugins {
+            app.registe_plugin(plugin.as_ref());
+        }
 
         app
     }

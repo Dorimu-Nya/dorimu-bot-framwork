@@ -963,8 +963,10 @@ dependencies = [
  "qqbot_sdk_axum",
  "qqbot_sdk_commands",
  "qqbot_sdk_core",
+ "qqbot_sdk_runtime",
  "serde_json",
  "tokio",
+ "tracing",
  "tracing-subscriber",
 ]
 
@@ -972,9 +974,8 @@ dependencies = [
 name = "qqbot_sdk_app"
 version = "0.1.0"
 dependencies = [
- "inventory",
- "qqbot_sdk_commands",
  "qqbot_sdk_core",
+ "qqbot_sdk_runtime",
  "serde",
  "tracing",
 ]
@@ -998,6 +999,7 @@ dependencies = [
  "inventory",
  "qqbot_sdk_commands_macros",
  "qqbot_sdk_core",
+ "qqbot_sdk_runtime",
  "serde",
 ]
 
@@ -1039,6 +1041,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "qqbot_sdk_runtime"
+version = "0.1.0"
+dependencies = [
+ "qqbot_sdk_core",
 ]
 
 [[package]]

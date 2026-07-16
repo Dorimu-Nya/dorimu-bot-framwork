@@ -57,15 +57,8 @@ impl App {
     where
         K: Into<EventKind>,
     {
-        let handlers = {
-            let guard = self.event_handlers.read().unwrap();
-
-            guard.get(&kind.into()).cloned()
-        };
-        if let Some(handlers) = handlers {
-            for handler in handlers {
-                handler(payload, &self.depend_store).await
-            }
+        for handler in self.event_handlers.handlers_for(kind) {
+            handler(payload, &self.depend_store).await
         }
     }
 }

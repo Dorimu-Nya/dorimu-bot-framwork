@@ -1,7 +1,7 @@
 use qqbot_sdk::events::c2c::event_type::C2cEventTypeKind;
 use qqbot_sdk::events::c2c::models::C2cMessage;
 use qqbot_sdk::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk::{App, AppConfig, Depend, Plugin};
+use qqbot_sdk::{App, AppConfig, Depend, Plugin, PluginRegistrar};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct HandlerState {
@@ -11,8 +11,8 @@ struct HandlerState {
 struct EventPlugin;
 
 impl Plugin for EventPlugin {
-    fn register(&self, app: &App) {
-        app.registe_event_handler(
+    fn register(&self, registrar: &PluginRegistrar<'_>) {
+        registrar.register_event_handler(
             C2cEventTypeKind::C2cMessageCreate,
             |_message: C2cMessage, state: Depend<HandlerState>| async move {
                 state.called.fetch_add(1, Ordering::SeqCst);

@@ -18,88 +18,43 @@ qqbot_sdk = { path = "./qqbot_sdk" }
 
 ## 消息指令
 
-### command
-
-用于接收任何场景（私聊，群聊...) 的消息
-
-#### 使用宏
+命令不会由 `qqbot_sdk_app` 自动启用，需要显式创建并加载顶层 facade 提供的 `CommandPlugin`：
 
 ```rust
-#[command("/ping")]
-fn ping(msg: &dyn CommonMessage) {
-    // Your biz logic...
-}
+use qqbot_sdk::{AppConfig, CommandPlugin, ReplyingMessage};
+
+let command_plugin = CommandPlugin::new()
+    .with_command("/ping", || ReplyingMessage::Text("Pong!".to_string()));
+
+let config = AppConfig::new().with_plugin(command_plugin);
 ```
-可装填的参数:
-- &dyn CommonMessage 抽象后的消息对象
-- String 原始消息字符串
-- Option<Vec<&str>> 将会被装入被空格分割后的消息
-- Option<Vec<Attachment>> 消息附件
 
-如果想要实现自己的转换，则需要自行实现 `FromCommonMessage`, 如:
+`#[command(...)]` 注册的命令也会在 `CommandPlugin` 加载时一并收集。`qqbot_sdk_app` 本身不依赖 commands。
+
+## 插件
+
+插件通过 runtime 提供的注册器声明事件处理器，不直接依赖具体的 `App` 实现：
 
 ```rust
-impl<'a> FromCommonMessage<'a> for &'a YourStruct {
-    fn from(req: &'a dyn CommonMessage) -> Self {
-        YourStruct { 
-            // Your coustructing ...
-        }
+use qqbot_sdk::events::c2c::event_type::C2cEventTypeKind;
+use qqbot_sdk::events::c2c::models::C2cMessage;
+use qqbot_sdk::{AppConfig, Plugin, PluginRegistrar};
+
+struct MyPlugin;
+
+impl Plugin for MyPlugin {
+    fn register(&self, registrar: &PluginRegistrar<'_>) {
+        registrar.register_event_handler(
+            C2cEventTypeKind::C2cMessageCreate,
+            |message: C2cMessage| async move {
+                println!("{:?}", message.content);
+            },
+        );
     }
 }
+
+let config = AppConfig::new().with_plugin(MyPlugin);
 ```
-
-#### 不使用宏
-
-除了 `#[command]`，也可以在 `AppConfig` 初始化时通过 `with_command` 注册。
-
-```rust
-use qqbot_sdk::{
-    AppConfig, CredentialConfig, Depend, ReplyingMessage,
-};
-
-struct CounterState {
-    value: std::sync::atomic::AtomicUsize,
-}
-
-fn ping() -> ReplyingMessage {
-    ReplyingMessage::Text("Pong!".to_string())
-}
-
-fn echo(words: Option<Vec<String>>) -> ReplyingMessage {
-    let content = words.unwrap_or_default().join(" ");
-    ReplyingMessage::Text(content)
-}
-
-async fn count(state: Depend<CounterState>) -> ReplyingMessage {
-    let current = state.value.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    ReplyingMessage::Text(format!("Current: {current}"))
-}
-
-let config = AppConfig::new()
-    .credential(CredentialConfig {
-        app_id: "YOUR_APP_ID".to_string(),
-        secret: "YOUR_SECRET".to_string(),
-    })
-    .with_depend(Depend::new(CounterState {
-        value: std::sync::atomic::AtomicUsize::new(0),
-    }))
-    .with_command("/ping", ping)
-    .with_command("/echo", echo)
-    .with_command("/count", count);
-```
-
-手动注册时的参数提取规则：
-
-- `Depend<T>`: 从 `DependStore` 注入
-- `String` / `Option<String>`: 提取消息文本
-- `Option<Vec<String>>`: 以空格切分消息文本
-- `Option<Vec<Attachment>>`: 提取消息附件
-- 返回值与 `#[command]` 一致，仍走 `CommandOutput` 统一转换
-
-说明：
-
-- 手动注册目前更适合使用拥有所有权的参数类型
-- 借用类型（如 `Option<Vec<&str>>`、`&dyn CommonMessage`）建议继续使用 `#[command]`
 
 ## 依赖注入
 类似于actix/axum的状态注入，可以存储像数据库连接池等对象。
@@ -112,29 +67,23 @@ let config = AppConfig::new();
 //Your other config...
 let config = config.with_depend(Depend::new(YourState));
 ```
-可以在任意上方提及到的宏处理的方法使用，如：
-```rust
-#[command("/ping")]
-fn has_depend(state: Depend<YourState>) {
-    // Your biz logic...
-}
-```
-
-事件 handler 使用相同的注入形式，普通事件参数从 webhook payload 提取：
-
+可以在事件处理器中使用：
 ```rust
 async fn on_message(message: C2cMessage, state: Depend<YourState>) {
     // Your biz logic...
 }
+```
+
+普通事件参数从 webhook payload 提取，`Depend<T>` 从 runtime 依赖容器提取。
 
 ## 当前开发目标和进度
 
 - [x] Webhook 事件的解析和处理函数
-- [x] 使用宏 收集 处理消息指令、其他事件的函数和对应的 trait 生成
+- [x] 事件处理函数注册和依赖注入
 - [ ] open api 部分的代码指令提高和文档
 - [x] 应用项目的启动参数的解析传递
 - [ ] 其他事件的处理
-- [x] 非宏方式的存储command
+- [ ] 独立的 `commands_app` 集成 crate
 
 ## 考虑/计划中/设想的未来目标
 - 提供配置读取

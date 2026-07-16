@@ -5,13 +5,8 @@ edition.workspace = true
 license.workspace = true
 description = "Application framework for qqbot_sdk"
 
-[features]
-default = []
-builtin-message-handler = ["dep:inventory"]
-
 [dependencies]
-inventory = { workspace = true, optional = true }
-qqbot_sdk_core = { path = "../qqbot_sdk_core", features = ["events", "openapi", "signature"] }
-qqbot_sdk_commands = { path = "../qqbot_sdk_commands/qqbot_sdk_commands" }
+qqbot_sdk_core = { path = "../qqbot_sdk_core", default-features = false, features = ["events", "openapi", "signature"] }
+qqbot_sdk_runtime = { path = "../qqbot_sdk_runtime" }
 serde.workspace = true
 tracing.workspace = true

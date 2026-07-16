@@ -1,5 +1,4 @@
-use super::{Depend, DependStore};
-use qqbot_sdk_commands::DynCommandHandleFn;
+use qqbot_sdk_runtime::{Depend, DependStore, Plugin};
 use serde::Deserialize;
 use std::any::Any;
 
@@ -80,17 +79,14 @@ pub struct AppConfig {
     pub sandbox_config: SandboxConfig,
     /// api地址覆写
     pub api_overrides: QQApiOverrides,
-    /// 启动时检查，包括上下文检查，指令是否重复等
+    /// 是否忽略启动时的重复依赖检查。
     pub ignore_checking: bool,
     /// 上下文存储
     #[serde(skip)]
     pub depends: Vec<Box<dyn Fn(&DependStore) -> Option<&'static str> + Send + Sync>>,
-    /// 手动注册的命令处理函数
+    /// 应用启动时注册的原生插件。
     #[serde(skip)]
-    pub commands: Vec<(&'static str, DynCommandHandleFn)>,
-    // 手动注册的事件处理函数容器。
-    // #[serde(skip)]
-    // pub(crate) event_handlers: EventHandlers,
+    pub plugins: Vec<Box<dyn Plugin>>,
 }
 
 impl Default for AppConfig {
@@ -102,8 +98,7 @@ impl Default for AppConfig {
             api_overrides: Default::default(),
             ignore_checking: false,
             depends: vec![],
-            commands: vec![],
-            // event_handlers: EventHandlers::default(),
+            plugins: vec![],
         }
     }
 }
@@ -138,6 +133,15 @@ impl AppConfig {
         self.depends.push(Box::new(move |store: &DependStore| {
             store.insert_arc(depend.as_arc())
         }));
+        self
+    }
+
+    /// 添加一个在应用初始化时加载的原生插件。
+    pub fn with_plugin<P>(mut self, plugin: P) -> Self
+    where
+        P: Plugin,
+    {
+        self.plugins.push(Box::new(plugin));
         self
     }
 }

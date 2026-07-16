@@ -1,6 +1,5 @@
-use qqbot_sdk_commands::FromCommandArg;
-use qqbot_sdk_core::events::common::CommonMessage;
-use qqbot_sdk_core::{resolve_dependency, DependencyProvider, DispatchPayload, FromEventArg};
+use crate::{resolve_dependency, DependencyProvider, FromEventArg};
+use qqbot_sdk_core::DispatchPayload;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -135,30 +134,5 @@ impl FromEventArg<DependArg> for DependStore {
                 .expect("event dependency provider must be DependStore")
                 .clone(),
         )
-    }
-}
-
-impl<T> FromCommandArg<DependArg> for Depend<T>
-where
-    T: Any + Send + Sync,
-{
-    fn from_command_arg(
-        _message: &dyn CommonMessage,
-        dependencies: &dyn DependencyProvider,
-    ) -> Self {
-        Self::from_provider(dependencies)
-    }
-}
-
-impl FromCommandArg<DependArg> for DependStore {
-    fn from_command_arg(
-        _message: &dyn CommonMessage,
-        dependencies: &dyn DependencyProvider,
-    ) -> Self {
-        dependencies
-            .as_any()
-            .downcast_ref::<DependStore>()
-            .expect("command dependency provider must be DependStore")
-            .clone()
     }
 }

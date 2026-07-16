@@ -1,6 +1,7 @@
 use super::replying::ReplyingMessage;
-use qqbot_sdk_core::events::common::{CommonMessage, FromCommonMessage};
-use qqbot_sdk_core::DependencyProvider;
+use crate::common::{CommonMessage, FromCommonMessage};
+use qqbot_sdk_runtime::{Depend, DependArg, DependStore, DependencyProvider};
+use std::any::Any;
 use std::{fmt::Display, future::Future, pin::Pin, sync::Arc};
 
 // 错误的封装
@@ -50,6 +51,31 @@ where
         _dependencies: &dyn DependencyProvider,
     ) -> Self {
         <Self as FromCommonMessage<'_>>::from(message)
+    }
+}
+
+impl<T> FromCommandArg<DependArg> for Depend<T>
+where
+    T: Any + Send + Sync,
+{
+    fn from_command_arg(
+        _message: &dyn CommonMessage,
+        dependencies: &dyn DependencyProvider,
+    ) -> Self {
+        Self::from_provider(dependencies)
+    }
+}
+
+impl FromCommandArg<DependArg> for DependStore {
+    fn from_command_arg(
+        _message: &dyn CommonMessage,
+        dependencies: &dyn DependencyProvider,
+    ) -> Self {
+        dependencies
+            .as_any()
+            .downcast_ref::<DependStore>()
+            .expect("command dependency provider must be DependStore")
+            .clone()
     }
 }
 

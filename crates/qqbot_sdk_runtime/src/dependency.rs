@@ -2,9 +2,6 @@ use std::any::{Any, TypeId};
 use std::sync::Arc;
 
 /// 面向对象安全的应用依赖访问接口。
-///
-/// 具体存储位于 app crate 中，core 层的事件和命令运行时只依赖此接口，
-/// 因此不需要依赖具体的存储实现。
 pub trait DependencyProvider: Send + Sync {
     fn get_dependency(&self, type_id: TypeId) -> Option<Arc<dyn Any + Send + Sync>>;
 

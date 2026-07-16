@@ -1,7 +1,7 @@
 use qqbot_sdk::events::c2c::event_type::C2cEventTypeKind;
 use qqbot_sdk::events::c2c::models::C2cMessage;
 use qqbot_sdk::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk::{App, AppConfig, Depend, Plugin};
+use qqbot_sdk::{App, AppConfig, Depend, Plugin, PluginRegistrar};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct PluginState {
@@ -11,8 +11,11 @@ struct PluginState {
 struct TemporaryPlugin;
 
 impl Plugin for TemporaryPlugin {
-    fn register(&self, app: &App) {
-        app.registe_event_handler(
+    fn register(&self, registrar: &PluginRegistrar<'_>) {
+        registrar.insert_dependency(PluginState {
+            called: AtomicUsize::new(0),
+        });
+        registrar.register_event_handler(
             C2cEventTypeKind::C2cMessageCreate,
             |message: C2cMessage, state: Depend<PluginState>| async move {
                 assert_eq!(message.content.as_deref(), Some("plugin-event"));
@@ -40,10 +43,7 @@ fn c2c_payload() -> DispatchPayload {
 
 #[tokio::test]
 async fn loaded_plugin_receives_dependencies_when_handling_events() {
-    let app = App::new(AppConfig::new().with_depend(Depend::new(PluginState {
-        called: AtomicUsize::new(0),
-    })));
-    app.registe_plugin(&TemporaryPlugin);
+    let app = App::new(AppConfig::new().with_plugin(TemporaryPlugin));
 
     app.webhook_handler(WebhookPayload::Dispatch(c2c_payload()))
         .await;

@@ -3,7 +3,7 @@ name = "qqbot_sdk_core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Core event, OpenAPI, and signature support for qqbot_sdk"
+description = "QQ webhook protocol, OpenAPI, and signature support for qqbot_sdk"
 
 [features]
 default = ["events", "openapi", "signature"]

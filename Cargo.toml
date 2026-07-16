@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/qqbot_sdk_core",
+    "crates/qqbot_sdk_runtime",
     "crates/qqbot_sdk",
     "crates/qqbot_sdk_app",
     "crates/qqbot_sdk_axum",

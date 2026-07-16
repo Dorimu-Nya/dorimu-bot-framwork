@@ -1,5 +1,4 @@
 use super::super::common::Attachment;
-use crate::events::common::{CommonMessage, MessageFrom};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,39 +28,6 @@ pub struct GroupAtMessage {
     #[serde(default)]
     /// 消息序列
     pub msg_seq: Option<u64>,
-}
-
-impl CommonMessage for GroupAtMessage {
-    fn get_id(&self) -> &String {
-        &self.id
-    }
-
-    fn get_content(&self) -> &Option<String> {
-        &self.content
-    }
-
-    fn get_author_openid(&self) -> &String {
-        &self.author.member_openid
-    }
-
-    fn get_timestamp(&self) -> &Option<String> {
-        &self.timestamp
-    }
-
-    fn get_attachments(&self) -> &Option<Vec<Attachment>> {
-        &self.attachments
-    }
-
-    fn get_msg_seq(&self) -> &Option<u64> {
-        &self.msg_seq
-    }
-
-    fn get_message_from_type(&self) -> MessageFrom {
-        MessageFrom::Group
-    }
-    fn get_scene_openid(&self) -> &String {
-        &self.group_openid
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

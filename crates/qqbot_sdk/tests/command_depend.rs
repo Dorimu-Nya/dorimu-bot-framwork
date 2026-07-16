@@ -1,6 +1,6 @@
 use qqbot_sdk::command;
 use qqbot_sdk::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk::{App, AppConfig, Depend};
+use qqbot_sdk::{App, AppConfig, CommandPlugin, Depend};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct Counter(AtomicUsize);
@@ -31,11 +31,13 @@ fn manually_registered_command(counter: Depend<Counter>) {
 }
 
 #[tokio::test]
-async fn command_plugin_injects_macro_and_manual_commands() {
+async fn manually_loaded_command_plugin_runs_macro_and_manual_commands() {
+    let command_plugin =
+        CommandPlugin::new().with_command("/manual-depend-test", manually_registered_command);
     let app = App::new(
         AppConfig::new()
             .with_depend(Depend::new(Counter(AtomicUsize::new(0))))
-            .with_command("/manual-depend-test", manually_registered_command),
+            .with_plugin(command_plugin),
     );
 
     app.webhook_handler(WebhookPayload::Dispatch(c2c_payload("/manual-depend-test")))

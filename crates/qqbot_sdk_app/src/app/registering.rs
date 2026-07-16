@@ -1,13 +1,14 @@
-use super::plugin::Plugin;
 use crate::app::App;
-use qqbot_sdk_core::{EventHandler, EventKind};
+use qqbot_sdk_core::EventKind;
+use qqbot_sdk_runtime::{EventHandler, Plugin, PluginRegistrar};
 
 impl App {
     /// 加载一个插件并让它注册所需的事件处理器。
-    ///
-    /// 参数使用 trait object，使原生插件与未来的 WASM 插件适配器能够共享此入口。
     pub fn registe_plugin(&self, plugin: &dyn Plugin) {
-        plugin.register(self);
+        plugin.register(&PluginRegistrar::new(
+            &self.event_handlers,
+            &self.depend_store,
+        ));
     }
 
     /// 注册一个事件处理器。
@@ -16,11 +17,6 @@ impl App {
         K: Into<EventKind>,
         H: EventHandler<Args, Kind>,
     {
-        self.event_handlers
-            .write()
-            .unwrap()
-            .entry(kind.into())
-            .or_default()
-            .push(handler.into_dyn());
+        self.event_handlers.register(kind, handler);
     }
 }

@@ -1023,7 +1023,7 @@ dependencies = [
  "http",
  "once_cell",
  "percent-encoding",
- "qqbot_sdk_event_macros",
+ "qqbot_sdk_core_macros",
  "reqwest",
  "serde",
  "serde_json",
@@ -1035,7 +1035,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "qqbot_sdk_event_macros"
+name = "qqbot_sdk_core_macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",

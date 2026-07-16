@@ -1,5 +1,5 @@
 [package]
-name = "qqbot_sdk_event_macros"
+name = "qqbot_sdk_core_macros"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

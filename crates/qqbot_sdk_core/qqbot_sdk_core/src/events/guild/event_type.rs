@@ -9,7 +9,7 @@ use crate::events::payload::{DispatchPayload, FromDispatchPayload};
 use serde::{Deserialize, Serialize};
 
 /// 频道事件
-#[qqbot_sdk_event_macros::event_kind]
+#[qqbot_sdk_core_macros::event_kind]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "t", content = "d")]
 pub enum GuildEventType {
@@ -115,7 +115,7 @@ pub enum GuildEventType {
 // }
 
 // 下面这一部分貌似没有用？webhook回调订阅好像没这些东西
-#[qqbot_sdk_event_macros::event_kind]
+#[qqbot_sdk_core_macros::event_kind]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "t", content = "d")]
 pub enum ForumEventType {

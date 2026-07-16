@@ -6,7 +6,7 @@ use crate::events::payload::{DispatchPayload, FromDispatchPayload};
 use serde::{Deserialize, Serialize};
 
 /// 单聊事件
-#[qqbot_sdk_event_macros::event_kind]
+#[qqbot_sdk_core_macros::event_kind]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "t", content = "d")]
 pub enum C2cEventType {

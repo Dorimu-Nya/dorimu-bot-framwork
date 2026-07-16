@@ -26,7 +26,7 @@ full = ["app", "macros", "axum-runner", "command-plugin"]
 [dependencies]
 inventory = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
-qqbot_sdk_core = { path = "../qqbot_sdk_core", default-features = false }
+qqbot_sdk_core = { path = "../qqbot_sdk_core/qqbot_sdk_core", default-features = false }
 qqbot_sdk_runtime = { path = "../qqbot_sdk_runtime", optional = true }
 qqbot_sdk_app = { path = "../qqbot_sdk_app", optional = true }
 qqbot_sdk_axum = { path = "../qqbot_sdk_axum", optional = true }

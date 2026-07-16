@@ -7,7 +7,7 @@ description = "Axum integration for qqbot_sdk"
 
 [dependencies]
 axum = { version = "0.8", features = ["macros"] }
-qqbot_sdk_core = { path = "../qqbot_sdk_core", features = ["events"] }
+qqbot_sdk_core = { path = "../qqbot_sdk_core/qqbot_sdk_core", features = ["events"] }
 qqbot_sdk_app = { path = "../qqbot_sdk_app" }
 tokio.workspace = true
 tracing.workspace = true

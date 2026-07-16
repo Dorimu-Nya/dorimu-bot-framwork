@@ -1,13 +1,13 @@
 [workspace]
 members = [
-    "crates/qqbot_sdk_core",
+    "crates/qqbot_sdk_core/qqbot_sdk_core",
+    "crates/qqbot_sdk_core/qqbot_sdk_core_macros",
     "crates/qqbot_sdk_runtime",
     "crates/qqbot_sdk",
     "crates/qqbot_sdk_app",
     "crates/qqbot_sdk_axum",
     "crates/qqbot_sdk_commands/qqbot_sdk_commands",
     "crates/qqbot_sdk_commands/qqbot_sdk_commands_macros",
-    "crates/qqbot_sdk_event_macros",
 ]
 resolver = "2"
 

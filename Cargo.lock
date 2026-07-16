@@ -963,7 +963,6 @@ dependencies = [
  "qqbot_sdk_axum",
  "qqbot_sdk_commands",
  "qqbot_sdk_core",
- "qqbot_sdk_macros",
  "serde_json",
  "tokio",
  "tracing-subscriber",
@@ -997,8 +996,18 @@ name = "qqbot_sdk_commands"
 version = "0.1.0"
 dependencies = [
  "inventory",
+ "qqbot_sdk_commands_macros",
  "qqbot_sdk_core",
  "serde",
+]
+
+[[package]]
+name = "qqbot_sdk_commands_macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -1027,15 +1036,6 @@ name = "qqbot_sdk_event_macros"
 version = "0.1.0"
 dependencies = [
  "heck",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "qqbot_sdk_macros"
-version = "0.1.0"
-dependencies = [
  "proc-macro2",
  "quote",
  "syn",

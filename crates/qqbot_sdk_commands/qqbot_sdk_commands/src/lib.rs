@@ -1,3 +1,5 @@
+pub use qqbot_sdk_commands_macros::command;
+
 pub mod defining;
 pub mod replying;
 pub mod store;

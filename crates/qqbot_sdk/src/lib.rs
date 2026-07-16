@@ -10,6 +10,9 @@ pub use qqbot_sdk_commands::{
     DynCommandHandleFn, FromCommandArg, ReplyingMessage, ReplyingType,
 };
 
+#[cfg(feature = "macros")]
+pub use qqbot_sdk_commands::command;
+
 #[cfg(feature = "app")]
 pub use qqbot_sdk_app::{
     App, AppConfig, AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, CredentialConfig, Depend,

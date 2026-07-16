@@ -12,6 +12,6 @@ builtin-message-handler = ["dep:inventory"]
 [dependencies]
 inventory = { workspace = true, optional = true }
 qqbot_sdk_core = { path = "../qqbot_sdk_core", features = ["events", "openapi", "signature"] }
-qqbot_sdk_commands = { path = "../qqbot_sdk_commands" }
+qqbot_sdk_commands = { path = "../qqbot_sdk_commands/qqbot_sdk_commands" }
 serde.workspace = true
 tracing.workspace = true

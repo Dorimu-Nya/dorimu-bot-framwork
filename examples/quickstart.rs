@@ -1,5 +1,6 @@
 use base64::engine::general_purpose;
 use base64::Engine;
+use qqbot_sdk::command;
 use qqbot_sdk::models::message::{
     Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
     MessageMedia, Permission, PermissionType, RenderData,
@@ -11,7 +12,6 @@ use qqbot_sdk::{
     run_application, AppConfig, CredentialConfig, Depend, HttpTokenProvider, OpenApi,
     ReplyingMessage, ReplyingMessage::Media,
 };
-use qqbot_sdk_macros::command;
 use std::fs;
 use std::sync::atomic::{AtomicI16, Ordering};
 struct CustomState {

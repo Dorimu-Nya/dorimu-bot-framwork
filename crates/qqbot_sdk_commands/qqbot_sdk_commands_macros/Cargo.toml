@@ -1,5 +1,5 @@
 [package]
-name = "qqbot_sdk_macros"
+name = "qqbot_sdk_commands_macros"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

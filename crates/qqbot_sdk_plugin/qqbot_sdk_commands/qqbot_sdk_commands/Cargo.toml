@@ -8,6 +8,6 @@ description = "Command runtime support for qqbot_sdk"
 [dependencies]
 inventory.workspace = true
 qqbot_sdk_commands_macros = { path = "../qqbot_sdk_commands_macros" }
-qqbot_sdk_core = { path = "../../qqbot_sdk_core/qqbot_sdk_core", default-features = false, features = ["events", "openapi"] }
-qqbot_sdk_runtime = { path = "../../qqbot_sdk_runtime" }
+qqbot_sdk_core = { path = "../../../qqbot_sdk_core/qqbot_sdk_core", default-features = false, features = ["events", "openapi"] }
+qqbot_sdk_runtime = { path = "../../../qqbot_sdk_runtime" }
 serde.workspace = true

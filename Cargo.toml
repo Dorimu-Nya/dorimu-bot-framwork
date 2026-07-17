@@ -6,8 +6,8 @@ members = [
     "crates/qqbot_sdk",
     "crates/qqbot_sdk_app",
     "crates/qqbot_sdk_axum",
-    "crates/qqbot_sdk_commands/qqbot_sdk_commands",
-    "crates/qqbot_sdk_commands/qqbot_sdk_commands_macros",
+    "crates/qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands",
+    "crates/qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands_macros",
 ]
 resolver = "2"
 

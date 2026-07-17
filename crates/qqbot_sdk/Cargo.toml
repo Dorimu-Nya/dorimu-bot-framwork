@@ -30,7 +30,7 @@ qqbot_sdk_core = { path = "../qqbot_sdk_core/qqbot_sdk_core", default-features =
 qqbot_sdk_runtime = { path = "../qqbot_sdk_runtime", optional = true }
 qqbot_sdk_app = { path = "../qqbot_sdk_app", optional = true }
 qqbot_sdk_axum = { path = "../qqbot_sdk_axum", optional = true }
-qqbot_sdk_commands = { path = "../qqbot_sdk_commands/qqbot_sdk_commands", optional = true }
+qqbot_sdk_commands = { path = "../qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands", optional = true }
 
 [dev-dependencies]
 base64.workspace = true

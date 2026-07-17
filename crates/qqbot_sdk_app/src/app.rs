@@ -1,5 +1,3 @@
-use super::AppConfig;
-use super::CredentialConfig;
 use qqbot_sdk_core::openapi::{
     HttpTokenProvider, OpenApi, OpenApiClient, OpenApiConfig, OpenApiPaths, TokenManager,
 };
@@ -7,14 +5,16 @@ use qqbot_sdk_runtime::{DependStore, EventHandlerRegistry};
 use std::sync::Arc;
 use std::time::Duration;
 
-pub type ApiClient = OpenApi<HttpTokenProvider>;
+use crate::config::{AppConfig, CredentialConfig};
+
+pub type QQApiCLient = OpenApi<HttpTokenProvider>;
 
 #[derive(Clone)]
 pub struct QQBotApp {
     /// 票据配置
     pub(crate) credential: CredentialConfig,
     /// 生产环境的 api 客户端
-    prod_api_client: Arc<ApiClient>,
+    prod_api_client: Arc<QQApiCLient>,
     /// 依赖容器
     pub depend_store: DependStore,
     /// 当前应用实例注册的事件处理器。
@@ -73,13 +73,13 @@ impl QQBotApp {
     }
 
     /// 获取 api 客户端。
-    pub fn get_api_client(&self) -> Arc<ApiClient> {
+    pub fn get_api_client(&self) -> Arc<QQApiCLient> {
         //TODO: 沙盒分配策略
         return self.get_prod_client();
     }
 
     /// 获取生产环境的 api 客户端。
-    pub fn get_prod_client(&self) -> Arc<ApiClient> {
+    pub fn get_prod_client(&self) -> Arc<QQApiCLient> {
         Arc::clone(&self.prod_api_client)
     }
 }

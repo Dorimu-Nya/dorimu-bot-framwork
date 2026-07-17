@@ -1,4 +1,4 @@
-use qqbot_sdk_app::ApiClient;
+use qqbot_sdk_app::QQApiCLient;
 use qqbot_sdk_commands::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
@@ -54,7 +54,7 @@ impl CommandPlugin {
 
     async fn handle_c2c(
         message: C2cMessage,
-        api: Depend<ApiClient>,
+        api: Depend<QQApiCLient>,
         commands: Depend<CommandsStore>,
         dependencies: DependStore,
     ) {
@@ -71,7 +71,7 @@ impl CommandPlugin {
 
     async fn handle_group(
         message: GroupAtMessage,
-        api: Depend<ApiClient>,
+        api: Depend<QQApiCLient>,
         commands: Depend<CommandsStore>,
         dependencies: DependStore,
     ) {

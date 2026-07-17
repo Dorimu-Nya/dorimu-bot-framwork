@@ -1,4 +1,4 @@
-use super::QQBotApp;
+use crate::app::QQBotApp;
 use qqbot_sdk_core::events::event::Event;
 use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
 use qqbot_sdk_core::events::validation::{ValidationRequest, ValidationResponse};

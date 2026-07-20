@@ -3,5 +3,8 @@ pub mod config;
 pub mod dispatching;
 pub mod registering;
 
-pub use app::{QQBotApp, QQApiCLient};
-pub use config::{AppConfig, CredentialConfig, SandboxConfig, ListeningConfig, QQApiOverrides};
+#[cfg(test)]
+mod app_test;
+
+pub use app::{QQApiCLient, QQBotApp};
+pub use config::{AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig};

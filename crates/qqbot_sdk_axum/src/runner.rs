@@ -1,9 +1,7 @@
 use axum::routing::any;
 use axum::{Json, Router};
-use qqbot_sdk_app::{QQBotApp, AppConfig};
-use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
-use qqbot_sdk_core::events::c2c::models::C2cMessage;
-use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
+use qqbot_sdk_app::{AppConfig, QQBotApp};
+use qqbot_sdk_core::events::payload::WebhookPayload;
 use std::sync::Arc;
 use tracing::info;
 
@@ -38,10 +36,6 @@ pub async fn run_application_with_router(
 
     let app = Arc::new(QQBotApp::new(config));
 
-    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn1);
-    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn2);
-    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, test_fn3);
-
     let base_router = base_router.unwrap_or(Router::new());
     let router = base_router.route(
         &webhook_path,
@@ -64,8 +58,3 @@ pub async fn run_application_with_router(
 pub async fn run_application(config: AppConfig) -> std::io::Result<()> {
     run_application_with_router(config, None).await
 }
-
-pub fn test_fn1() {}
-pub fn test_fn2(_payload: &DispatchPayload) {}
-
-pub fn test_fn3(_detail: &C2cMessage) {}

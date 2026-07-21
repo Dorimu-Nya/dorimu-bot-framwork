@@ -1001,6 +1001,7 @@ dependencies = [
  "qqbot_sdk_core",
  "qqbot_sdk_runtime",
  "serde",
+ "tokio",
 ]
 
 [[package]]

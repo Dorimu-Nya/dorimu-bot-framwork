@@ -28,3 +28,6 @@ thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 qqbot_sdk_core_macros = { path = "../qqbot_sdk_core_macros" }
+
+[dev-dependencies]
+serde_json.workspace = true

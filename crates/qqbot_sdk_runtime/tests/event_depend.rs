@@ -1,6 +1,6 @@
-use qqbot_sdk::events::c2c::models::C2cMessage;
-use qqbot_sdk::events::payload::DispatchPayload;
-use qqbot_sdk::{Depend, DependStore, DynEventHandler, EventHandler};
+use qqbot_sdk_core::events::c2c::models::C2cMessage;
+use qqbot_sdk_core::events::payload::DispatchPayload;
+use qqbot_sdk_runtime::{Depend, DependStore, DynEventHandler, EventHandler};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct Counter(AtomicUsize);

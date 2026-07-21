@@ -1,4 +1,4 @@
-use qqbot_sdk::DependStore;
+use qqbot_sdk_runtime::DependStore;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct Counter(AtomicUsize);

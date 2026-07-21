@@ -1,7 +1,8 @@
-use qqbot_sdk::events::c2c::event_type::C2cEventTypeKind;
-use qqbot_sdk::events::c2c::models::C2cMessage;
-use qqbot_sdk::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk::{QQBotApp, AppConfig, Depend, Plugin, PluginRegistrar};
+use qqbot_sdk_app::{AppConfig, QQBotApp};
+use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
+use qqbot_sdk_core::events::c2c::models::C2cMessage;
+use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
+use qqbot_sdk_runtime::{Depend, Plugin, PluginRegistrar};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct PluginState {
@@ -27,16 +28,8 @@ impl Plugin for TemporaryPlugin {
 
 fn c2c_payload() -> DispatchPayload {
     serde_json::from_value(serde_json::json!({
-        "id": "event-id",
-        "op": 0,
-        "s": 1,
-        "t": "C2C_MESSAGE_CREATE",
-        "d": {
-            "id": "message-id",
-            "author": { "user_openid": "user-id" },
-            "content": "plugin-event",
-            "msg_seq": 1
-        }
+        "id": "event-id", "op": 0, "s": 1, "t": "C2C_MESSAGE_CREATE",
+        "d": { "id": "message-id", "author": { "user_openid": "user-id" }, "content": "plugin-event", "msg_seq": 1 }
     }))
     .unwrap()
 }
@@ -44,7 +37,6 @@ fn c2c_payload() -> DispatchPayload {
 #[tokio::test]
 async fn loaded_plugin_receives_dependencies_when_handling_events() {
     let app = QQBotApp::new(AppConfig::new().with_plugin(TemporaryPlugin));
-
     app.webhook_handler(WebhookPayload::Dispatch(c2c_payload()))
         .await;
 

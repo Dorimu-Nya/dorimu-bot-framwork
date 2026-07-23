@@ -17,7 +17,7 @@ license = "MIT OR Apache-2.0"
 [workspace.dependencies]
 async-trait = "0.1"
 base64 = "0.22"
-ed25519-dalek = "2"
+ed25519-dalek = "3"
 hex = "0.4"
 http = "1"
 inventory = "0.3.24"

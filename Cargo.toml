@@ -1,7 +1,18 @@
+[package]
+name = "qqbot_sdk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "QQ bot SDK (webhook-first)"
+
+[[example]]
+name = "quickstart"
+path = "examples/quickstart.rs"
+required-features = ["app", "macros", "axum-runner", "command-plugin"]
+
 [workspace]
 members = [
     "crates/qqbot_sdk_runtime",
-    "crates/qqbot_sdk",
     "crates/qqbot_sdk_app",
     "crates/qqbot_sdk_axum",
     "crates/qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands",
@@ -32,3 +43,30 @@ thiserror = "2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "signal", "rt"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
+
+[features]
+default = ["app", "macros", "axum-runner", "command-plugin"]
+events = ["qqbot_sdk_core/events"]
+openapi = ["qqbot_sdk_core/openapi"]
+signature = ["qqbot_sdk_core/signature"]
+runtime = ["events", "dep:qqbot_sdk_runtime"]
+app = ["runtime", "openapi", "signature", "dep:qqbot_sdk_app"]
+commands = ["runtime", "openapi", "dep:qqbot_sdk_commands"]
+macros = ["commands", "dep:inventory"]
+command-plugin = ["app", "commands"]
+axum-runner = ["app", "dep:qqbot_sdk_axum"]
+full = ["app", "macros", "axum-runner", "command-plugin"]
+
+[dependencies]
+inventory = { workspace = true, optional = true }
+qqbot_sdk_core = { path = "crates/qqbot_sdk_core/qqbot_sdk_core", default-features = false }
+qqbot_sdk_runtime = { path = "crates/qqbot_sdk_runtime", optional = true }
+qqbot_sdk_app = { path = "crates/qqbot_sdk_app", optional = true }
+qqbot_sdk_axum = { path = "crates/qqbot_sdk_axum", optional = true }
+qqbot_sdk_commands = { path = "crates/qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands", optional = true }
+
+[dev-dependencies]
+base64.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt", "env-filter"] }

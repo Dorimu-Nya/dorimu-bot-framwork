@@ -1,8 +1,8 @@
-use qqbot_sdk_app::QQApiCLient;
-use qqbot_sdk_commands::{
+use crate::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
 };
+use qqbot_sdk_app::QQApiCLient;
 use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
 use qqbot_sdk_core::events::c2c::models::C2cMessage;
 use qqbot_sdk_core::events::group::event_type::GroupEventTypeKind;
@@ -87,7 +87,7 @@ impl CommandPlugin {
     }
 
     async fn handle_message(
-        message: &dyn qqbot_sdk_commands::CommonMessage,
+        message: &dyn crate::CommonMessage,
         commands: &CommandsStore,
         dependencies: &DependStore,
     ) -> Option<ReplyingMessage> {

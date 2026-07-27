@@ -966,7 +966,6 @@ dependencies = [
  "qqbot_sdk_runtime",
  "serde_json",
  "tokio",
- "tracing",
  "tracing-subscriber",
 ]
 
@@ -999,11 +998,13 @@ name = "qqbot_sdk_commands"
 version = "0.1.0"
 dependencies = [
  "inventory",
+ "qqbot_sdk_app",
  "qqbot_sdk_commands_macros",
  "qqbot_sdk_core",
  "qqbot_sdk_runtime",
  "serde",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

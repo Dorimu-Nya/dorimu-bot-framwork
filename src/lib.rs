@@ -2,9 +2,6 @@
 
 extern crate self as qqbot_sdk;
 
-#[cfg(feature = "command-plugin")]
-mod command_plugin;
-
 #[allow(unused_imports)]
 pub use qqbot_sdk_core::*;
 
@@ -19,14 +16,14 @@ pub use qqbot_sdk_commands::{
 };
 
 #[cfg(feature = "command-plugin")]
-pub use command_plugin::CommandPlugin;
+pub use qqbot_sdk_commands::CommandPlugin;
 
 #[cfg(feature = "macros")]
 pub use qqbot_sdk_commands::command;
 
 #[cfg(feature = "app")]
 pub use qqbot_sdk_app::{
-    QQBotApp, AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig,
+    AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, QQBotApp, SandboxConfig,
 };
 
 #[cfg(feature = "macros")]

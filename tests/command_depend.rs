@@ -1,6 +1,6 @@
 use qqbot_sdk::command;
 use qqbot_sdk::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk::{QQBotApp, AppConfig, CommandPlugin, Depend};
+use qqbot_sdk::{AppConfig, CommandPlugin, Depend, QQBotApp};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct Counter(AtomicUsize);

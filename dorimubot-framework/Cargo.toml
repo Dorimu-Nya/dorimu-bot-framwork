@@ -5,11 +5,17 @@ edition.workspace = true
 license.workspace = true
 description = "All-in-one facade for DorimuBot Framework"
 
+[features]
+default = ["axum-webhook", "commands", "commands-macros"]
+axum-webhook = ["dep:dorimubot-axum"]
+commands = ["dep:dorimubot-commands"]
+commands-macros = ["dep:dorimubot-commands-macros"]
+
 [dependencies]
 dorimubot-framework-core = { path = "../dorimubot-framework-core" }
-dorimubot-axum = { path = "../dorimubot-axum" }
-dorimubot-commands = { path = "../dorimubot-commands" }
-dorimubot-commands-macros = { path = "../dorimubot-commands-macros" }
+dorimubot-axum = { path = "../dorimubot-axum", optional = true }
+dorimubot-commands = { path = "../dorimubot-commands", optional = true }
+dorimubot-commands-macros = { path = "../dorimubot-commands-macros", optional = true }
 
 [dev-dependencies]
 qqbot-rust-sdk = { workspace = true, features = ["openapi"] }

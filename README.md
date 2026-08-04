@@ -19,6 +19,9 @@ dorimubot-framework = { path = "./dorimubot-framework/dorimubot-framework" }
 该 crate 统一重新导出了 core、Axum 集成和 commands；也可通过
 `dorimubot_framework::{core, axum, commands}` 分模块访问。
 
+默认启用全部可选功能，也可以通过 `default-features = false` 关闭后按需启用
+`axum-webhook`、`commands` 和 `commands-macros`。
+
 ## 消息指令
 
 命令功能由门面 crate 统一导出，需要显式注册到应用：

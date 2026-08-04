@@ -1,6 +1,7 @@
-use dorimubot_framework::ReplyingMessage::Text;
 use dorimubot_framework::{
-    command, run_application, CommandPlugin, CredentialConfig, QQBot, QQBotConfig, ReplyingMessage,
+    dorimubot_commands::{command, CommandPlugin, ReplyingMessage},
+    dorimubot_framework_core::{CredentialConfig, QQBot, QQBotConfig},
+    run_dorimubot,
 };
 use qqbot_rust_sdk::openapi::models::message::{
     Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
@@ -8,6 +9,7 @@ use qqbot_rust_sdk::openapi::models::message::{
 };
 use std::sync::atomic::{AtomicI16, Ordering};
 use std::sync::Arc;
+use ReplyingMessage::Text;
 
 struct CustomState {
     pub value: AtomicI16,
@@ -69,7 +71,7 @@ async fn main() -> std::io::Result<()> {
 
     let app = QQBot::new(config);
     command_plugin.register(&app);
-    run_application(app).await
+    run_dorimubot(app).await
 }
 
 #[command("/ping")]

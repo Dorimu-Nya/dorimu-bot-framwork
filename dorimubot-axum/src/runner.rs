@@ -12,7 +12,7 @@ use tracing::info;
 /// example:
 /// ```no_run
 /// use dorimubot_framework_core::{QQBotConfig, CredentialConfig, QQBot};
-/// use dorimubot_axum::run_application;
+/// use dorimubot_axum::run_axum;
 /// #[tokio::main]
 /// async fn main() -> std::io::Result<()> {
 ///     let config = QQBotConfig {
@@ -22,10 +22,10 @@ use tracing::info;
 ///         },
 ///         ..Default::default()
 ///     };
-///     run_application(QQBot::new(config)).await
+///     run_axum(QQBot::new(config)).await
 /// }
 /// ```
-pub async fn run_application_with_router(
+pub async fn run_axum_with_router(
     app: QQBot,
     base_router: Option<Router>,
 ) -> std::io::Result<()> {
@@ -54,6 +54,6 @@ pub async fn run_application_with_router(
 /// 启动基于Axum的 QQ Bot 程序
 ///
 /// 将会用默认方式构造axum的router
-pub async fn run_application(app: QQBot) -> std::io::Result<()> {
-    run_application_with_router(app, None).await
+pub async fn run_axum(app: QQBot) -> std::io::Result<()> {
+    run_axum_with_router(app, None).await
 }

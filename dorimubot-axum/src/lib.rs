@@ -1,3 +1,3 @@
 mod runner;
 
-pub use runner::{run_application, run_application_with_router};
+pub use runner::{run_axum, run_axum_with_router};

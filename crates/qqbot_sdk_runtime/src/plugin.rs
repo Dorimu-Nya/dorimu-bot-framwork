@@ -1,5 +1,5 @@
 use crate::{DependStore, EventHandler, EventHandlerRegistry};
-use qqbot_sdk_core::EventKind;
+use qqbot_rust_sdk::events::payload::event::EventKind;
 
 /// 插件注册期间可访问的运行时能力。
 pub struct PluginRegistrar<'a> {

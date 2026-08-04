@@ -1,8 +1,7 @@
 use crate::app::QQBotApp;
-use qqbot_sdk_core::events::event::Event;
-use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk_core::events::validation::{ValidationRequest, ValidationResponse};
-use qqbot_sdk_core::EventKind;
+use qqbot_rust_sdk::events::payload::event::{Event, EventKind};
+use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
+use qqbot_rust_sdk::events::validation::{ValidationRequest, ValidationResponse};
 use tracing::debug;
 
 impl QQBotApp {
@@ -26,7 +25,7 @@ impl QQBotApp {
         &self,
         req: ValidationRequest,
     ) -> Result<ValidationResponse, Box<dyn std::error::Error>> {
-        let signature = qqbot_sdk_core::signature::sign_webhook_validation(
+        let signature = qqbot_rust_sdk::signature::sign_webhook_validation(
             &self.credential.secret,
             &req.event_ts,
             &req.plain_token,
@@ -40,14 +39,12 @@ impl QQBotApp {
     /// 处理 opcode 为 0 的事件分发。
     async fn dispatch_event(&self, payload: DispatchPayload) {
         match &payload.event {
-            Event::C2cEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
-            Event::GroupEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
-            Event::GuildEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
-            Event::ForumEventType(event) => self.dispatch_kind(event.to_kind(), &payload).await,
-            Event::InteractionEventType(event) => {
-                self.dispatch_kind(event.to_kind(), &payload).await
-            }
-            Event::MessageReactionEventType(event) => {
+            Event::C2cEvent(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::GroupEvent(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::GuildEvent(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::ForumEvent(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::InteractionEvent(event) => self.dispatch_kind(event.to_kind(), &payload).await,
+            Event::MessageReactionEvent(event) => {
                 self.dispatch_kind(event.to_kind(), &payload).await
             }
         }

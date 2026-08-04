@@ -1,5 +1,5 @@
 use crate::{resolve_dependency, DependencyProvider, FromEventArg};
-use qqbot_sdk_core::DispatchPayload;
+use qqbot_rust_sdk::events::payload::payload::DispatchPayload;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::ops::Deref;

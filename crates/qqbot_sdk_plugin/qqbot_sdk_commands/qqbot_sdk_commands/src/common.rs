@@ -1,6 +1,6 @@
-use qqbot_sdk_core::events::c2c::models::C2cMessage;
-use qqbot_sdk_core::events::common::Attachment;
-use qqbot_sdk_core::events::group::models::GroupAtMessage;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::common::MessageAttachment;
+use qqbot_rust_sdk::events::group::models::GroupMessage;
 
 /// 消息来源，用于统一命令处理的消息抽象。
 pub enum MessageFrom {
@@ -14,8 +14,7 @@ pub trait CommonMessage: Sync {
     fn get_content(&self) -> &Option<String>;
     fn get_author_openid(&self) -> &String;
     fn get_timestamp(&self) -> &Option<String>;
-    fn get_attachments(&self) -> &Option<Vec<Attachment>>;
-    fn get_msg_seq(&self) -> &Option<u64>;
+    fn get_attachments(&self) -> &Vec<MessageAttachment>;
     fn get_message_from_type(&self) -> MessageFrom;
     /// 返回当前场景的 openid：私聊为用户 id，群聊为群 id。
     fn get_scene_openid(&self) -> &String;
@@ -38,12 +37,8 @@ impl CommonMessage for C2cMessage {
         &self.timestamp
     }
 
-    fn get_attachments(&self) -> &Option<Vec<Attachment>> {
+    fn get_attachments(&self) -> &Vec<MessageAttachment> {
         &self.attachments
-    }
-
-    fn get_msg_seq(&self) -> &Option<u64> {
-        &self.msg_seq
     }
 
     fn get_message_from_type(&self) -> MessageFrom {
@@ -55,7 +50,7 @@ impl CommonMessage for C2cMessage {
     }
 }
 
-impl CommonMessage for GroupAtMessage {
+impl CommonMessage for GroupMessage {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -65,19 +60,15 @@ impl CommonMessage for GroupAtMessage {
     }
 
     fn get_author_openid(&self) -> &String {
-        &self.author.member_openid
+        &self.author.member_open_id
     }
 
     fn get_timestamp(&self) -> &Option<String> {
         &self.timestamp
     }
 
-    fn get_attachments(&self) -> &Option<Vec<Attachment>> {
+    fn get_attachments(&self) -> &Vec<MessageAttachment> {
         &self.attachments
-    }
-
-    fn get_msg_seq(&self) -> &Option<u64> {
-        &self.msg_seq
     }
 
     fn get_message_from_type(&self) -> MessageFrom {
@@ -100,13 +91,13 @@ impl<'a> FromCommonMessage<'a> for &'a dyn CommonMessage {
     }
 }
 
-impl<'a> FromCommonMessage<'a> for &'a Option<Vec<Attachment>> {
+impl<'a> FromCommonMessage<'a> for &'a Vec<MessageAttachment> {
     fn from(req: &'a dyn CommonMessage) -> Self {
         req.get_attachments()
     }
 }
 
-impl FromCommonMessage<'_> for Option<Vec<Attachment>> {
+impl FromCommonMessage<'_> for Vec<MessageAttachment> {
     fn from(req: &dyn CommonMessage) -> Self {
         req.get_attachments().clone()
     }

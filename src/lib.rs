@@ -3,7 +3,27 @@
 extern crate self as qqbot_sdk;
 
 #[allow(unused_imports)]
-pub use qqbot_sdk_core::*;
+pub use qqbot_rust_sdk::*;
+
+#[cfg(feature = "events")]
+pub use qqbot_rust_sdk::events::payload::event::{Event, EventKind};
+#[cfg(feature = "events")]
+pub use qqbot_rust_sdk::events::payload::payload::{
+    DispatchPayload, FromDispatchPayload, HttpCallbackAckPayload, WebhookAddressVerifyPayload,
+    WebhookPayload,
+};
+
+#[cfg(feature = "openapi")]
+pub use qqbot_rust_sdk::openapi::error::{Error, Result};
+#[cfg(feature = "openapi")]
+pub use qqbot_rust_sdk::openapi::http::{HttpClient, RetryPolicy};
+#[cfg(feature = "openapi")]
+pub use qqbot_rust_sdk::openapi::models;
+#[cfg(feature = "openapi")]
+pub use qqbot_rust_sdk::openapi::*;
+
+#[cfg(feature = "signature")]
+pub use qqbot_rust_sdk::signature::sign_webhook_validation;
 
 #[cfg(feature = "runtime")]
 pub use qqbot_sdk_runtime::*;

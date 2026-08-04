@@ -1,5 +1,5 @@
 use crate::{DynEventHandler, EventHandler};
-use qqbot_sdk_core::EventKind;
+use qqbot_rust_sdk::events::payload::event::EventKind;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 

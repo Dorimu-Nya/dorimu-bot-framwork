@@ -1,7 +1,7 @@
 use axum::routing::any;
 use axum::{Json, Router};
+use qqbot_rust_sdk::events::payload::payload::WebhookPayload;
 use qqbot_sdk_app::{AppConfig, QQBotApp};
-use qqbot_sdk_core::events::payload::WebhookPayload;
 use std::sync::Arc;
 use tracing::info;
 

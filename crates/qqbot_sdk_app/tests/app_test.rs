@@ -1,7 +1,7 @@
+use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
 use qqbot_sdk_app::{AppConfig, QQBotApp};
-use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
-use qqbot_sdk_core::events::c2c::models::C2cMessage;
-use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 static HANDLER_CALLS: AtomicUsize = AtomicUsize::new(0);
@@ -10,15 +10,9 @@ static HANDLER_CALLS: AtomicUsize = AtomicUsize::new(0);
 async fn registers_event_handlers_with_supported_signatures() {
     let app = QQBotApp::new(AppConfig::default());
 
-    app.registe_event_handler(
-        C2cEventTypeKind::C2cMessageCreate,
-        handler_without_arguments,
-    );
-    app.registe_event_handler(C2cEventTypeKind::C2cMessageCreate, handler_with_payload);
-    app.registe_event_handler(
-        C2cEventTypeKind::C2cMessageCreate,
-        handler_with_event_detail,
-    );
+    app.registe_event_handler(C2cEventKind::C2cMessageCreate, handler_without_arguments);
+    app.registe_event_handler(C2cEventKind::C2cMessageCreate, handler_with_payload);
+    app.registe_event_handler(C2cEventKind::C2cMessageCreate, handler_with_event_detail);
 
     HANDLER_CALLS.store(0, Ordering::SeqCst);
     app.webhook_handler(WebhookPayload::Dispatch(c2c_payload()))
@@ -30,7 +24,20 @@ async fn registers_event_handlers_with_supported_signatures() {
 fn c2c_payload() -> DispatchPayload {
     serde_json::from_value(serde_json::json!({
         "id": "event-id", "op": 0, "s": 1, "t": "C2C_MESSAGE_CREATE",
-        "d": { "id": "message-id", "author": { "user_openid": "user-id" }, "content": "app-test", "msg_seq": 1 }
+        "d": {
+            "id": "message-id",
+            "author": {
+                "username": "",
+                "bot": false,
+                "union_user_account": "",
+                "user_openid": "user-id",
+                "member_open_id": "",
+                "membership_role": ""
+            },
+            "content": "app-test",
+            "attachments": [],
+            "msg_elements": []
+        }
     }))
     .unwrap()
 }

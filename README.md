@@ -36,7 +36,7 @@ let config = AppConfig::new().with_plugin(command_plugin);
 插件通过 runtime 提供的注册器声明事件处理器，不直接依赖具体的 `App` 实现：
 
 ```rust
-use qqbot_sdk::events::c2c::event_type::C2cEventTypeKind;
+use qqbot_sdk::events::c2c::event::C2cEventKind;
 use qqbot_sdk::events::c2c::models::C2cMessage;
 use qqbot_sdk::{AppConfig, Plugin, PluginRegistrar};
 
@@ -45,7 +45,7 @@ struct MyPlugin;
 impl Plugin for MyPlugin {
     fn register(&self, registrar: &PluginRegistrar<'_>) {
         registrar.register_event_handler(
-            C2cEventTypeKind::C2cMessageCreate,
+            C2cEventKind::C2cMessageCreate,
             |message: C2cMessage| async move {
                 println!("{:?}", message.content);
             },

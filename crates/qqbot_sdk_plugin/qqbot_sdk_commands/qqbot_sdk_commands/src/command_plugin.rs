@@ -2,11 +2,11 @@ use crate::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
 };
+use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::group::event::GroupEventKind;
+use qqbot_rust_sdk::events::group::models::GroupMessage;
 use qqbot_sdk_app::QQApiCLient;
-use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
-use qqbot_sdk_core::events::c2c::models::C2cMessage;
-use qqbot_sdk_core::events::group::event_type::GroupEventTypeKind;
-use qqbot_sdk_core::events::group::models::GroupAtMessage;
 use qqbot_sdk_runtime::{Depend, DependStore, Plugin, PluginRegistrar};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -59,8 +59,7 @@ impl CommandPlugin {
         dependencies: DependStore,
     ) {
         if let Some(reply) = Self::handle_message(&message, &commands, &dependencies).await {
-            let body =
-                reply.to_request(Some(message.id.clone()), Some(message.msg_seq.unwrap_or(1)));
+            let body = reply.to_request(Some(message.id.clone()), Some(1));
             let result = api
                 .c2c_messages()
                 .send_typed(&message.author.user_openid, &body)
@@ -70,14 +69,13 @@ impl CommandPlugin {
     }
 
     async fn handle_group(
-        message: GroupAtMessage,
+        message: GroupMessage,
         api: Depend<QQApiCLient>,
         commands: Depend<CommandsStore>,
         dependencies: DependStore,
     ) {
         if let Some(reply) = Self::handle_message(&message, &commands, &dependencies).await {
-            let body =
-                reply.to_request(Some(message.id.clone()), Some(message.msg_seq.unwrap_or(1)));
+            let body = reply.to_request(Some(message.id.clone()), Some(1));
             let result = api
                 .group_messages()
                 .send_typed(&message.group_openid, &body)
@@ -134,8 +132,7 @@ impl Plugin for CommandPlugin {
             );
         }
 
-        registrar.register_event_handler(C2cEventTypeKind::C2cMessageCreate, Self::handle_c2c);
-        registrar
-            .register_event_handler(GroupEventTypeKind::GroupAtMessageCreate, Self::handle_group);
+        registrar.register_event_handler(C2cEventKind::C2cMessageCreate, Self::handle_c2c);
+        registrar.register_event_handler(GroupEventKind::GroupAtMessageCreate, Self::handle_group);
     }
 }

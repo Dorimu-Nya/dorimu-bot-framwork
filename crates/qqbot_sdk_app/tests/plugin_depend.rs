@@ -1,7 +1,7 @@
+use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
 use qqbot_sdk_app::{AppConfig, QQBotApp};
-use qqbot_sdk_core::events::c2c::event_type::C2cEventTypeKind;
-use qqbot_sdk_core::events::c2c::models::C2cMessage;
-use qqbot_sdk_core::events::payload::{DispatchPayload, WebhookPayload};
 use qqbot_sdk_runtime::{Depend, Plugin, PluginRegistrar};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -17,7 +17,7 @@ impl Plugin for TemporaryPlugin {
             called: AtomicUsize::new(0),
         });
         registrar.register_event_handler(
-            C2cEventTypeKind::C2cMessageCreate,
+            C2cEventKind::C2cMessageCreate,
             |message: C2cMessage, state: Depend<PluginState>| async move {
                 assert_eq!(message.content.as_deref(), Some("plugin-event"));
                 state.called.fetch_add(1, Ordering::SeqCst);
@@ -29,7 +29,20 @@ impl Plugin for TemporaryPlugin {
 fn c2c_payload() -> DispatchPayload {
     serde_json::from_value(serde_json::json!({
         "id": "event-id", "op": 0, "s": 1, "t": "C2C_MESSAGE_CREATE",
-        "d": { "id": "message-id", "author": { "user_openid": "user-id" }, "content": "plugin-event", "msg_seq": 1 }
+        "d": {
+            "id": "message-id",
+            "author": {
+                "username": "",
+                "bot": false,
+                "union_user_account": "",
+                "user_openid": "user-id",
+                "member_open_id": "",
+                "membership_role": ""
+            },
+            "content": "plugin-event",
+            "attachments": [],
+            "msg_elements": []
+        }
     }))
     .unwrap()
 }

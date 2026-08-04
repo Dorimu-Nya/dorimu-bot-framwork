@@ -1,22 +1,29 @@
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::common::User;
 use qqbot_sdk_commands::{CommandHandler, CommandsStore, DynCommandHandleFn, ReplyingMessage};
-use qqbot_sdk_core::events::c2c::models::{C2cAuthor, C2cMessage};
 use qqbot_sdk_runtime::DependStore;
 use std::collections::HashMap;
 
 fn command_message(content: &str) -> C2cMessage {
     C2cMessage {
         id: "message-id".to_string(),
-        author: C2cAuthor {
+        author: User {
             id: None,
-            user_openid: "user-id".to_string(),
+            username: "test-user".to_string(),
+            bot: false,
             union_openid: None,
+            union_user_account: String::new(),
+            user_openid: "user-id".to_string(),
+            member_open_id: String::new(),
+            membership_role: String::new(),
         },
         content: Some(content.to_string()),
         timestamp: None,
-        attachments: None,
         message_type: None,
         message_scene: None,
-        msg_seq: Some(1),
+        attachments: Vec::new(),
+        ark_data: None,
+        msg_elements: Vec::new(),
     }
 }
 

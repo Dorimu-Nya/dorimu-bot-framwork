@@ -1,5 +1,5 @@
 use crate::dependency::DependencyProvider;
-use qqbot_sdk_core::{DispatchPayload, FromDispatchPayload};
+use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, FromDispatchPayload};
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;

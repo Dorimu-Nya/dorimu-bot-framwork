@@ -1,5 +1,5 @@
 use crate::app::QQBotApp;
-use qqbot_sdk_core::EventKind;
+use qqbot_rust_sdk::events::payload::event::EventKind;
 use qqbot_sdk_runtime::{EventHandler, Plugin, PluginRegistrar};
 
 impl QQBotApp {

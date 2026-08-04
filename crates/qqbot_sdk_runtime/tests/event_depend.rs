@@ -1,5 +1,5 @@
-use qqbot_sdk_core::events::c2c::models::C2cMessage;
-use qqbot_sdk_core::events::payload::DispatchPayload;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::payload::payload::DispatchPayload;
 use qqbot_sdk_runtime::{Depend, DependStore, DynEventHandler, EventHandler};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -20,9 +20,17 @@ fn c2c_payload(content: &str) -> DispatchPayload {
         "t": "C2C_MESSAGE_CREATE",
         "d": {
             "id": "message-id",
-            "author": { "user_openid": "user-id" },
+            "author": {
+                "username": "",
+                "bot": false,
+                "union_user_account": "",
+                "user_openid": "user-id",
+                "member_open_id": "",
+                "membership_role": ""
+            },
             "content": content,
-            "msg_seq": 1
+            "attachments": [],
+            "msg_elements": []
         }
     }))
     .unwrap()

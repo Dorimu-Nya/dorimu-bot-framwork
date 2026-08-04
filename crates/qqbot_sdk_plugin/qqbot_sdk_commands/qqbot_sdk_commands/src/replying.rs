@@ -1,7 +1,6 @@
-use qqbot_sdk_core::models::message::MessageMarkdown;
-use qqbot_sdk_core::openapi::models::message::MessageType;
-use qqbot_sdk_core::openapi::models::message::{
-    MessageArk, MessageEmbed, MessageMedia, SendMessageRequest,
+use qqbot_rust_sdk::openapi::models::message::MessageType;
+use qqbot_rust_sdk::openapi::models::message::{
+    MessageArk, MessageEmbed, MessageMarkdown, MessageMedia, SendMessageRequest,
 };
 use serde::{Deserialize, Serialize};
 

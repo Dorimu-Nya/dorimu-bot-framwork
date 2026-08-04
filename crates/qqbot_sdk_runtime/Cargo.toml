@@ -6,7 +6,7 @@ license.workspace = true
 description = "Event runtime and native plugin API for qqbot_sdk"
 
 [dependencies]
-qqbot_sdk_core = { path = "../qqbot_sdk_core/qqbot_sdk_core", default-features = false, features = ["events"] }
+qqbot-rust-sdk = { workspace = true, features = ["events"] }
 
 [dev-dependencies]
 serde_json.workspace = true

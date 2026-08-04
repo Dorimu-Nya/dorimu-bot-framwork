@@ -893,6 +893,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
+
+[[package]]
 name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -954,15 +960,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "qqbot-rust-sdk"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3454540e46c96d35dff05a2a65f9d3102f9d7369d7732cb2cd66155f0cd52f23"
+dependencies = [
+ "async-trait",
+ "ed25519-dalek",
+ "hex",
+ "http",
+ "paste",
+ "percent-encoding",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "strum",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "qqbot_sdk"
 version = "0.1.0"
 dependencies = [
  "base64",
  "inventory",
+ "qqbot-rust-sdk",
  "qqbot_sdk_app",
  "qqbot_sdk_axum",
  "qqbot_sdk_commands",
- "qqbot_sdk_core",
  "qqbot_sdk_runtime",
  "serde_json",
  "tokio",
@@ -973,7 +1000,7 @@ dependencies = [
 name = "qqbot_sdk_app"
 version = "0.1.0"
 dependencies = [
- "qqbot_sdk_core",
+ "qqbot-rust-sdk",
  "qqbot_sdk_runtime",
  "serde",
  "serde_json",
@@ -986,8 +1013,8 @@ name = "qqbot_sdk_axum"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "qqbot-rust-sdk",
  "qqbot_sdk_app",
- "qqbot_sdk_core",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -998,9 +1025,9 @@ name = "qqbot_sdk_commands"
 version = "0.1.0"
 dependencies = [
  "inventory",
+ "qqbot-rust-sdk",
  "qqbot_sdk_app",
  "qqbot_sdk_commands_macros",
- "qqbot_sdk_core",
  "qqbot_sdk_runtime",
  "serde",
  "tokio",
@@ -1020,41 +1047,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "qqbot_sdk_core"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "base64",
- "ed25519-dalek",
- "hex",
- "http",
- "once_cell",
- "percent-encoding",
- "qqbot_sdk_core_macros",
- "reqwest",
- "serde",
- "serde_json",
- "serde_repr",
- "strum",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qqbot_sdk_core_macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "qqbot_sdk_runtime"
 version = "0.1.0"
 dependencies = [
- "qqbot_sdk_core",
+ "qqbot-rust-sdk",
  "serde_json",
  "tokio",
 ]

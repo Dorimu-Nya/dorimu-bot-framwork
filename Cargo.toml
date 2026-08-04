@@ -26,29 +26,20 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
-async-trait = "0.1"
 base64 = "0.22"
-ed25519-dalek = "2"
-hex = "0.4"
-http = "1"
 inventory = "0.3.24"
-once_cell = "1.21.4"
-percent-encoding = "2"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+qqbot-rust-sdk = { version = "0.0.1", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_repr = "0.1.20"
-strum = { version = "0.27", features = ["derive"] }
-thiserror = "2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "signal", "rt"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
 [features]
 default = ["app", "macros", "axum-runner", "command-plugin"]
-events = ["qqbot_sdk_core/events"]
-openapi = ["qqbot_sdk_core/openapi"]
-signature = ["qqbot_sdk_core/signature"]
+events = ["qqbot-rust-sdk/events"]
+openapi = ["qqbot-rust-sdk/openapi"]
+signature = ["qqbot-rust-sdk/signature"]
 runtime = ["events", "dep:qqbot_sdk_runtime"]
 app = ["runtime", "openapi", "signature", "dep:qqbot_sdk_app"]
 commands = ["runtime", "openapi", "dep:qqbot_sdk_commands"]
@@ -59,7 +50,7 @@ full = ["app", "macros", "axum-runner", "command-plugin"]
 
 [dependencies]
 inventory = { workspace = true, optional = true }
-qqbot_sdk_core = { path = "crates/qqbot_sdk_core/qqbot_sdk_core", default-features = false }
+qqbot-rust-sdk.workspace = true
 qqbot_sdk_runtime = { path = "crates/qqbot_sdk_runtime", optional = true }
 qqbot_sdk_app = { path = "crates/qqbot_sdk_app", optional = true }
 qqbot_sdk_axum = { path = "crates/qqbot_sdk_axum", optional = true }

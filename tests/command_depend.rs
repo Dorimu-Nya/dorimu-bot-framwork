@@ -1,6 +1,5 @@
 use qqbot_sdk::command;
-use qqbot_sdk::events::payload::{DispatchPayload, WebhookPayload};
-use qqbot_sdk::{AppConfig, CommandPlugin, Depend, QQBotApp};
+use qqbot_sdk::{AppConfig, CommandPlugin, Depend, DispatchPayload, QQBotApp, WebhookPayload};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct Counter(AtomicUsize);
@@ -13,9 +12,17 @@ fn c2c_payload(content: &str) -> DispatchPayload {
         "t": "C2C_MESSAGE_CREATE",
         "d": {
             "id": "message-id",
-            "author": { "user_openid": "user-id" },
+            "author": {
+                "username": "",
+                "bot": false,
+                "union_user_account": "",
+                "user_openid": "user-id",
+                "member_open_id": "",
+                "membership_role": ""
+            },
             "content": content,
-            "msg_seq": 1
+            "attachments": [],
+            "msg_elements": []
         }
     }))
     .unwrap()

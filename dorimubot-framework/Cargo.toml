@@ -7,9 +7,9 @@ description = "All-in-one facade for DorimuBot Framework"
 
 [dependencies]
 dorimubot-framework-core = { path = "../dorimubot-framework-core" }
-dorimubot_axum = { path = "../dorimubot_axum" }
-dorimubot_commands = { path = "../dorimubot_commands" }
-dorimubot_commands_macros = { path = "../dorimubot_commands_macros" }
+dorimubot-axum = { path = "../dorimubot-axum" }
+dorimubot-commands = { path = "../dorimubot-commands" }
+dorimubot-commands-macros = { path = "../dorimubot-commands-macros" }
 
 [dev-dependencies]
 qqbot-rust-sdk = { workspace = true, features = ["openapi"] }

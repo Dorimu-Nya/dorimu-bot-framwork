@@ -100,7 +100,7 @@ pub fn command_impl(args: CommandArgs, func: ItemFn) -> TokenStream {
 }
 
 fn commands_crate_path() -> TokenStream {
-    match crate_name("dorimubot_commands") {
+    match crate_name("dorimubot-commands") {
         Ok(FoundCrate::Itself) => quote!(crate),
         Ok(FoundCrate::Name(name)) => {
             let name = format_ident!("{}", name);
@@ -113,7 +113,7 @@ fn commands_crate_path() -> TokenStream {
                 quote!(::#name::commands)
             }
             Err(error) => panic!(
-                "#[command] requires either dorimubot_commands or dorimubot-framework: {error}"
+                "#[command] requires either dorimubot-commands or dorimubot-framework: {error}"
             ),
         },
     }

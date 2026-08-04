@@ -2,9 +2,9 @@
 members = [
     "dorimubot-framework",
     "dorimubot-framework-core",
-    "dorimubot_axum",
-    "dorimubot_commands",
-    "dorimubot_commands_macros",
+    "dorimubot-axum",
+    "dorimubot-commands",
+    "dorimubot-commands-macros",
 ]
 resolver = "2"
 

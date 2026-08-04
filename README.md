@@ -33,7 +33,7 @@ let app = QQBot::new(QQBotConfig::new());
 command_plugin.register(&app);
 ```
 
-`#[command(...)]` 注册的命令也会在 `CommandPlugin::register` 时一并收集。底层依赖方向保持为 `dorimubot_commands -> dorimubot-framework-core`，门面 crate 负责组合并导出各功能 crate。
+`#[command(...)]` 注册的命令也会在 `CommandPlugin::register` 时一并收集。底层依赖方向保持为 `dorimubot-commands -> dorimubot-framework-core`，门面 crate 负责组合并导出各功能 crate。
 
 需要共享状态时，直接通过 `Arc` 和闭包显式捕获：
 

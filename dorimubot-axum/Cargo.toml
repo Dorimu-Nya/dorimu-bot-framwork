@@ -1,5 +1,5 @@
 [package]
-name = "dorimubot_axum"
+name = "dorimubot-axum"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

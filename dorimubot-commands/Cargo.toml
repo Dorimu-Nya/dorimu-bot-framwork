@@ -1,5 +1,5 @@
 [package]
-name = "dorimubot_commands"
+name = "dorimubot-commands"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -7,7 +7,7 @@ description = "Command runtime support for DorimuBot Framework"
 
 [dependencies]
 dorimubot-framework-core = { path = "../dorimubot-framework-core" }
-dorimubot_commands_macros = { path = "../dorimubot_commands_macros" }
+dorimubot-commands-macros = { path = "../dorimubot-commands-macros" }
 inventory.workspace = true
 qqbot-rust-sdk = { workspace = true, features = ["events", "openapi"] }
 serde.workspace = true

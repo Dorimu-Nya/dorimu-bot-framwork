@@ -1,0 +1,29 @@
+[package]
+name = "dorimubot-framework"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "基于 qqbot-rust-sdk 开发的QQ机器人开发框架"
+
+[features]
+default = ["app"]
+events = ["qqbot-rust-sdk/events"]
+openapi = ["qqbot-rust-sdk/openapi"]
+signature = ["qqbot-rust-sdk/signature"]
+runtime = ["events"]
+app = ["runtime", "openapi", "signature", "dep:serde", "dep:tracing"]
+macros = ["dep:inventory", "dep:dorimubot_commands_macros"]
+full = ["app", "macros"]
+
+[dependencies]
+inventory = { workspace = true, optional = true }
+qqbot-rust-sdk.workspace = true
+serde = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+dorimubot_commands_macros = { path = "../dorimubot_commands_macros", optional = true }
+
+[dev-dependencies]
+base64.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt", "env-filter"] }

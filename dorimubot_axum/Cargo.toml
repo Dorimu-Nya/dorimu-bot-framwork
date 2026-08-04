@@ -1,0 +1,17 @@
+[package]
+name = "dorimubot_axum"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Axum integration for DorimuBot Framework"
+
+[dependencies]
+axum = { version = "0.8", features = ["macros"] }
+dorimubot-framework = { path = "../dorimubot-framework", features = ["app"] }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+base64.workspace = true
+dorimubot_commands = { path = "../dorimubot_commands" }

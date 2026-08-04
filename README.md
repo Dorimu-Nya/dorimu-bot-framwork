@@ -13,15 +13,17 @@ git submodule add https://github.com/Dorimu-Nya/dorimubot-framework dorimubot-fr
 随后，在 `Cargo.toml` 的 `dependencies` 区块 添加
 
 ```toml
-dorimubot-framework = { path = "./dorimubot-framework" }
+dorimubot-framework = { path = "./dorimubot-framework/dorimubot-framework" }
+dorimubot_commands = { path = "./dorimubot-framework/dorimubot_commands" }
 ```
 
 ## 消息指令
 
-命令不会由 `dorimubot_app` 自动启用，需要显式创建并加载顶层 facade 提供的 `CommandPlugin`：
+命令功能位于独立的 `dorimubot_commands` crate，需要显式创建并加载 `CommandPlugin`：
 
 ```rust
-use dorimubot_framework::{AppConfig, CommandPlugin, ReplyingMessage};
+use dorimubot_commands::{CommandPlugin, ReplyingMessage};
+use dorimubot_framework::AppConfig;
 
 let command_plugin = CommandPlugin::new()
     .with_command("/ping", || ReplyingMessage::Text("Pong!".to_string()));
@@ -29,11 +31,11 @@ let command_plugin = CommandPlugin::new()
 let config = AppConfig::new().with_plugin(command_plugin);
 ```
 
-`#[command(...)]` 注册的命令也会在 `CommandPlugin` 加载时一并收集。`dorimubot_app` 本身不依赖 commands。
+`#[command(...)]` 注册的命令也会在 `CommandPlugin` 加载时一并收集。依赖方向保持为 `dorimubot_commands -> dorimubot-framework`，framework 不反向依赖 commands。
 
 ## 插件
 
-插件通过 runtime 提供的注册器声明事件处理器，不直接依赖具体的 `App` 实现：
+插件通过 framework 提供的注册器声明事件处理器：
 
 ```rust
 use dorimubot_framework::events::c2c::event::C2cEventKind;
@@ -74,7 +76,7 @@ async fn on_message(message: C2cMessage, state: Depend<YourState>) {
 }
 ```
 
-普通事件参数从 webhook payload 提取，`Depend<T>` 从 runtime 依赖容器提取。
+普通事件参数从 webhook payload 提取，`Depend<T>` 从 framework 依赖容器提取。
 
 ## 当前开发目标和进度
 

@@ -1,22 +1,9 @@
-[package]
-name = "dorimubot-framework"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-description = "基于 qqbot-rust-sdk 开发的QQ机器人开发框架"
-
-[[example]]
-name = "quickstart"
-path = "examples/quickstart.rs"
-required-features = ["app", "macros", "axum-runner", "command-plugin"]
-
 [workspace]
 members = [
-    "crates/dorimubot_runtime",
-    "crates/dorimubot_app",
-    "crates/dorimubot_axum",
-    "crates/dorimubot_plugin/dorimubot_commands/dorimubot_commands",
-    "crates/dorimubot_plugin/dorimubot_commands/dorimubot_commands_macros",
+    "dorimubot-framework",
+    "dorimubot_axum",
+    "dorimubot_commands",
+    "dorimubot_commands_macros",
 ]
 resolver = "2"
 
@@ -34,30 +21,3 @@ serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "signal", "rt"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
-
-[features]
-default = ["app", "macros", "axum-runner", "command-plugin"]
-events = ["qqbot-rust-sdk/events"]
-openapi = ["qqbot-rust-sdk/openapi"]
-signature = ["qqbot-rust-sdk/signature"]
-runtime = ["events", "dep:dorimubot_runtime"]
-app = ["runtime", "openapi", "signature", "dep:dorimubot_app"]
-commands = ["runtime", "openapi", "dep:dorimubot_commands"]
-macros = ["commands", "dep:inventory"]
-command-plugin = ["app", "commands"]
-axum-runner = ["app", "dep:dorimubot_axum"]
-full = ["app", "macros", "axum-runner", "command-plugin"]
-
-[dependencies]
-inventory = { workspace = true, optional = true }
-qqbot-rust-sdk.workspace = true
-dorimubot_runtime = { path = "crates/dorimubot_runtime", optional = true }
-dorimubot_app = { path = "crates/dorimubot_app", optional = true }
-dorimubot_axum = { path = "crates/dorimubot_axum", optional = true }
-dorimubot_commands = { path = "crates/dorimubot_plugin/dorimubot_commands/dorimubot_commands", optional = true }
-
-[dev-dependencies]
-base64.workspace = true
-serde_json.workspace = true
-tokio.workspace = true
-tracing-subscriber = { workspace = true, features = ["fmt", "env-filter"] }

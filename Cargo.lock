@@ -257,27 +257,14 @@ name = "dorimubot-framework"
 version = "0.1.0"
 dependencies = [
  "base64",
- "dorimubot_app",
- "dorimubot_axum",
- "dorimubot_commands",
- "dorimubot_runtime",
+ "dorimubot_commands_macros",
  "inventory",
- "qqbot-rust-sdk",
- "serde_json",
- "tokio",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "dorimubot_app"
-version = "0.1.0"
-dependencies = [
- "dorimubot_runtime",
  "qqbot-rust-sdk",
  "serde",
  "serde_json",
  "tokio",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -285,8 +272,9 @@ name = "dorimubot_axum"
 version = "0.1.0"
 dependencies = [
  "axum",
- "dorimubot_app",
- "qqbot-rust-sdk",
+ "base64",
+ "dorimubot-framework",
+ "dorimubot_commands",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -296,35 +284,21 @@ dependencies = [
 name = "dorimubot_commands"
 version = "0.1.0"
 dependencies = [
- "dorimubot_app",
- "dorimubot_commands_macros",
- "dorimubot_runtime",
- "inventory",
- "qqbot-rust-sdk",
- "serde",
+ "dorimubot-framework",
+ "serde_json",
  "tokio",
- "tracing",
 ]
 
 [[package]]
 name = "dorimubot_commands_macros"
 version = "0.1.0"
 dependencies = [
+ "dorimubot-framework",
  "dorimubot_commands",
- "dorimubot_runtime",
  "inventory",
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "dorimubot_runtime"
-version = "0.1.0"
-dependencies = [
- "qqbot-rust-sdk",
- "serde_json",
- "tokio",
 ]
 
 [[package]]

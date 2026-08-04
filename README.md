@@ -1,4 +1,4 @@
-# qqbot_sdk
+# dorimubot-framework
 
 一个正在开发中的对接支持 QQ机器人 官方API Webhook 框架，目标是一键开箱，快速使用。
 
@@ -7,21 +7,21 @@
 照常创建一个空的Rust项目，然后使用 git submodule 添加本仓库
 
 ```sh
-git submodule add https://github.com/Dorimu-Nya/dorimu-bot-sdk qqbot_sdk
+git submodule add https://github.com/Dorimu-Nya/dorimubot-framework dorimubot-framework
 ```
 
 随后，在 `Cargo.toml` 的 `dependencies` 区块 添加
 
 ```toml
-qqbot_sdk = { path = "./qqbot_sdk" }
+dorimubot-framework = { path = "./dorimubot-framework" }
 ```
 
 ## 消息指令
 
-命令不会由 `qqbot_sdk_app` 自动启用，需要显式创建并加载顶层 facade 提供的 `CommandPlugin`：
+命令不会由 `dorimubot_app` 自动启用，需要显式创建并加载顶层 facade 提供的 `CommandPlugin`：
 
 ```rust
-use qqbot_sdk::{AppConfig, CommandPlugin, ReplyingMessage};
+use dorimubot_framework::{AppConfig, CommandPlugin, ReplyingMessage};
 
 let command_plugin = CommandPlugin::new()
     .with_command("/ping", || ReplyingMessage::Text("Pong!".to_string()));
@@ -29,16 +29,16 @@ let command_plugin = CommandPlugin::new()
 let config = AppConfig::new().with_plugin(command_plugin);
 ```
 
-`#[command(...)]` 注册的命令也会在 `CommandPlugin` 加载时一并收集。`qqbot_sdk_app` 本身不依赖 commands。
+`#[command(...)]` 注册的命令也会在 `CommandPlugin` 加载时一并收集。`dorimubot_app` 本身不依赖 commands。
 
 ## 插件
 
 插件通过 runtime 提供的注册器声明事件处理器，不直接依赖具体的 `App` 实现：
 
 ```rust
-use qqbot_sdk::events::c2c::event::C2cEventKind;
-use qqbot_sdk::events::c2c::models::C2cMessage;
-use qqbot_sdk::{AppConfig, Plugin, PluginRegistrar};
+use dorimubot_framework::events::c2c::event::C2cEventKind;
+use dorimubot_framework::events::c2c::models::C2cMessage;
+use dorimubot_framework::{AppConfig, Plugin, PluginRegistrar};
 
 struct MyPlugin;
 

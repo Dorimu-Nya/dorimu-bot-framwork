@@ -1,0 +1,16 @@
+[package]
+name = "dorimubot_app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Application framework for DorimuBot Framework"
+
+[dependencies]
+qqbot-rust-sdk = { workspace = true, features = ["events", "openapi", "signature"] }
+dorimubot_runtime = { path = "../dorimubot_runtime" }
+serde.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+tokio.workspace = true

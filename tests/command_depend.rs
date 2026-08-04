@@ -1,5 +1,7 @@
-use qqbot_sdk::command;
-use qqbot_sdk::{AppConfig, CommandPlugin, Depend, DispatchPayload, QQBotApp, WebhookPayload};
+use dorimubot_framework::command;
+use dorimubot_framework::{
+    AppConfig, CommandPlugin, Depend, DispatchPayload, QQBotApp, WebhookPayload,
+};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct Counter(AtomicUsize);

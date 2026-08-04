@@ -1,6 +1,6 @@
-use qqbot_sdk::events::c2c::event::C2cEventKind;
-use qqbot_sdk::models::UploadMediaRequest;
-use qqbot_sdk::{
+use dorimubot_framework::events::c2c::event::C2cEventKind;
+use dorimubot_framework::models::UploadMediaRequest;
+use dorimubot_framework::{
     DispatchPayload, EventKind, FromDispatchPayload, HttpTokenProvider, OpenApi, Result,
     WebhookPayload,
 };

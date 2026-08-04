@@ -1,4 +1,4 @@
-# qqbot_sdk
+# dorimubot-framework
 
 Webhook-first QQ bot SDK for Rust.
 
@@ -16,7 +16,7 @@ Webhook-first QQ bot SDK for Rust.
 ## Quick start (webhook)
 
 ```rust
-use qqbot_sdk::{event_name_field, EventResponse, EventRouter, WebhookApp, WebhookConfig};
+use dorimubot_framework::{event_name_field, EventResponse, EventRouter, WebhookApp, WebhookConfig};
 use std::net::SocketAddr;
 
 #[tokio::main]
@@ -45,7 +45,7 @@ async fn main() {
 ## Signature verification
 
 ```rust
-use qqbot_sdk::{ReplayProtectionMode, SignatureConfig, SignatureVerifier};
+use dorimubot_framework::{ReplayProtectionMode, SignatureConfig, SignatureVerifier};
 use std::time::Duration;
 
 let public_key = vec![0u8; 32]; // replace with your bot public key bytes
@@ -59,7 +59,7 @@ let verifier = SignatureVerifier::new(
 Or derive it from Bot Secret:
 
 ```rust
-use qqbot_sdk::SignatureVerifier;
+use dorimubot_framework::SignatureVerifier;
 
 let verifier = SignatureVerifier::from_bot_secret("your_bot_secret")?;
 ```
@@ -67,7 +67,7 @@ let verifier = SignatureVerifier::from_bot_secret("your_bot_secret")?;
 Attach it to `WebhookConfig`:
 
 ```rust
-use qqbot_sdk::{SignatureVerificationMode, WebhookConfig};
+use dorimubot_framework::{SignatureVerificationMode, WebhookConfig};
 
 let config = WebhookConfig {
     signature: Some(verifier),
@@ -97,7 +97,7 @@ Recommended production rollout:
 ## OpenAPI client scaffold
 
 ```rust
-use qqbot_sdk::{HttpTokenProvider, OpenApiClient, OpenApiConfig, RetryPolicy, TokenManager};
+use dorimubot_framework::{HttpTokenProvider, OpenApiClient, OpenApiConfig, RetryPolicy, TokenManager};
 use std::time::Duration;
 
 let token_provider = HttpTokenProvider::official("app_id", "client_secret");
@@ -121,7 +121,7 @@ Supported env vars:
 ## Typed event envelope
 
 ```rust
-use qqbot_sdk::{EventResponse, EventRouter, TypedEvent, WebhookApp, WebhookConfig};
+use dorimubot_framework::{EventResponse, EventRouter, TypedEvent, WebhookApp, WebhookConfig};
 
 let router = EventRouter::new().route_fn("MESSAGE_CREATE", move |ctx| {
     async move {
@@ -135,7 +135,7 @@ let router = EventRouter::new().route_fn("MESSAGE_CREATE", move |ctx| {
 ## Webhook handshake hook
 
 ```rust
-use qqbot_sdk::{webhook_validation_hook, WebhookConfig};
+use dorimubot_framework::{webhook_validation_hook, WebhookConfig};
 
 let config = WebhookConfig {
     hook: Some(webhook_validation_hook("your_bot_secret")),
@@ -146,7 +146,7 @@ let config = WebhookConfig {
 ## OpenAPI modules (path templates)
 
 ```rust
-use qqbot_sdk::{OpenApi, OpenApiPaths};
+use dorimubot_framework::{OpenApi, OpenApiPaths};
 
 let paths = OpenApiPaths::official_defaults();
 

@@ -1,0 +1,18 @@
+[package]
+name = "dorimubot_commands"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Command runtime support for DorimuBot Framework"
+
+[dependencies]
+inventory.workspace = true
+tracing.workspace = true
+dorimubot_app = { path = "../../../dorimubot_app" }
+dorimubot_commands_macros = { path = "../dorimubot_commands_macros" }
+qqbot-rust-sdk = { workspace = true, features = ["events", "openapi"] }
+dorimubot_runtime = { path = "../../../dorimubot_runtime" }
+serde.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

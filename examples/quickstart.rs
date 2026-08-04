@@ -1,14 +1,14 @@
 use base64::engine::general_purpose;
 use base64::Engine;
-use qqbot_sdk::command;
-use qqbot_sdk::models::message::{
+use dorimubot_framework::command;
+use dorimubot_framework::models::message::{
     Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
     MessageMedia, Permission, PermissionType, RenderData,
 };
-use qqbot_sdk::models::UploadMediaRequest;
-use qqbot_sdk::CommonMessage;
-use qqbot_sdk::ReplyingMessage::Text;
-use qqbot_sdk::{
+use dorimubot_framework::models::UploadMediaRequest;
+use dorimubot_framework::CommonMessage;
+use dorimubot_framework::ReplyingMessage::Text;
+use dorimubot_framework::{
     run_application, AppConfig, CommandPlugin, CredentialConfig, Depend, HttpTokenProvider,
     OpenApi, ReplyingMessage, ReplyingMessage::Media,
 };
@@ -93,7 +93,9 @@ fn counting(state: Depend<CustomState>) -> ReplyingMessage {
 }
 
 #[command("/me")]
-async fn me(api: Depend<OpenApi<HttpTokenProvider>>) -> qqbot_sdk::Result<ReplyingMessage> {
+async fn me(
+    api: Depend<OpenApi<HttpTokenProvider>>,
+) -> dorimubot_framework::Result<ReplyingMessage> {
     let (status, user) = api.users().me().await?;
     Ok(Text(format!("status: {}\nme: {:#?}", status, user)))
 }

@@ -1,9 +1,9 @@
 [package]
-name = "qqbot_sdk"
+name = "dorimubot-framework"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "QQ bot SDK (webhook-first)"
+description = "基于 qqbot-rust-sdk 开发的QQ机器人开发框架"
 
 [[example]]
 name = "quickstart"
@@ -12,11 +12,11 @@ required-features = ["app", "macros", "axum-runner", "command-plugin"]
 
 [workspace]
 members = [
-    "crates/qqbot_sdk_runtime",
-    "crates/qqbot_sdk_app",
-    "crates/qqbot_sdk_axum",
-    "crates/qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands",
-    "crates/qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands_macros",
+    "crates/dorimubot_runtime",
+    "crates/dorimubot_app",
+    "crates/dorimubot_axum",
+    "crates/dorimubot_plugin/dorimubot_commands/dorimubot_commands",
+    "crates/dorimubot_plugin/dorimubot_commands/dorimubot_commands_macros",
 ]
 resolver = "2"
 
@@ -40,21 +40,21 @@ default = ["app", "macros", "axum-runner", "command-plugin"]
 events = ["qqbot-rust-sdk/events"]
 openapi = ["qqbot-rust-sdk/openapi"]
 signature = ["qqbot-rust-sdk/signature"]
-runtime = ["events", "dep:qqbot_sdk_runtime"]
-app = ["runtime", "openapi", "signature", "dep:qqbot_sdk_app"]
-commands = ["runtime", "openapi", "dep:qqbot_sdk_commands"]
+runtime = ["events", "dep:dorimubot_runtime"]
+app = ["runtime", "openapi", "signature", "dep:dorimubot_app"]
+commands = ["runtime", "openapi", "dep:dorimubot_commands"]
 macros = ["commands", "dep:inventory"]
 command-plugin = ["app", "commands"]
-axum-runner = ["app", "dep:qqbot_sdk_axum"]
+axum-runner = ["app", "dep:dorimubot_axum"]
 full = ["app", "macros", "axum-runner", "command-plugin"]
 
 [dependencies]
 inventory = { workspace = true, optional = true }
 qqbot-rust-sdk.workspace = true
-qqbot_sdk_runtime = { path = "crates/qqbot_sdk_runtime", optional = true }
-qqbot_sdk_app = { path = "crates/qqbot_sdk_app", optional = true }
-qqbot_sdk_axum = { path = "crates/qqbot_sdk_axum", optional = true }
-qqbot_sdk_commands = { path = "crates/qqbot_sdk_plugin/qqbot_sdk_commands/qqbot_sdk_commands", optional = true }
+dorimubot_runtime = { path = "crates/dorimubot_runtime", optional = true }
+dorimubot_app = { path = "crates/dorimubot_app", optional = true }
+dorimubot_axum = { path = "crates/dorimubot_axum", optional = true }
+dorimubot_commands = { path = "crates/dorimubot_plugin/dorimubot_commands/dorimubot_commands", optional = true }
 
 [dev-dependencies]
 base64.workspace = true

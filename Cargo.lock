@@ -253,6 +253,81 @@ dependencies = [
 ]
 
 [[package]]
+name = "dorimubot-framework"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "dorimubot_app",
+ "dorimubot_axum",
+ "dorimubot_commands",
+ "dorimubot_runtime",
+ "inventory",
+ "qqbot-rust-sdk",
+ "serde_json",
+ "tokio",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "dorimubot_app"
+version = "0.1.0"
+dependencies = [
+ "dorimubot_runtime",
+ "qqbot-rust-sdk",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "dorimubot_axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "dorimubot_app",
+ "qqbot-rust-sdk",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "dorimubot_commands"
+version = "0.1.0"
+dependencies = [
+ "dorimubot_app",
+ "dorimubot_commands_macros",
+ "dorimubot_runtime",
+ "inventory",
+ "qqbot-rust-sdk",
+ "serde",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "dorimubot_commands_macros"
+version = "0.1.0"
+dependencies = [
+ "dorimubot_commands",
+ "dorimubot_runtime",
+ "inventory",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "dorimubot_runtime"
+version = "0.1.0"
+dependencies = [
+ "qqbot-rust-sdk",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "ed25519"
 version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -977,81 +1052,6 @@ dependencies = [
  "serde_repr",
  "strum",
  "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "qqbot_sdk"
-version = "0.1.0"
-dependencies = [
- "base64",
- "inventory",
- "qqbot-rust-sdk",
- "qqbot_sdk_app",
- "qqbot_sdk_axum",
- "qqbot_sdk_commands",
- "qqbot_sdk_runtime",
- "serde_json",
- "tokio",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "qqbot_sdk_app"
-version = "0.1.0"
-dependencies = [
- "qqbot-rust-sdk",
- "qqbot_sdk_runtime",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qqbot_sdk_axum"
-version = "0.1.0"
-dependencies = [
- "axum",
- "qqbot-rust-sdk",
- "qqbot_sdk_app",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "qqbot_sdk_commands"
-version = "0.1.0"
-dependencies = [
- "inventory",
- "qqbot-rust-sdk",
- "qqbot_sdk_app",
- "qqbot_sdk_commands_macros",
- "qqbot_sdk_runtime",
- "serde",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qqbot_sdk_commands_macros"
-version = "0.1.0"
-dependencies = [
- "inventory",
- "proc-macro2",
- "qqbot_sdk_commands",
- "qqbot_sdk_runtime",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "qqbot_sdk_runtime"
-version = "0.1.0"
-dependencies = [
- "qqbot-rust-sdk",
- "serde_json",
  "tokio",
 ]
 

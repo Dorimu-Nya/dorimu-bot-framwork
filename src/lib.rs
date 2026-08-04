@@ -1,6 +1,6 @@
 //! QQ bot SDK (webhook-first).
 
-extern crate self as qqbot_sdk;
+extern crate self as dorimubot_framework;
 
 #[allow(unused_imports)]
 pub use qqbot_rust_sdk::*;
@@ -26,23 +26,23 @@ pub use qqbot_rust_sdk::openapi::*;
 pub use qqbot_rust_sdk::signature::sign_webhook_validation;
 
 #[cfg(feature = "runtime")]
-pub use qqbot_sdk_runtime::*;
+pub use dorimubot_runtime::*;
 
 #[cfg(feature = "commands")]
-pub use qqbot_sdk_commands::{
+pub use dorimubot_commands::{
     CommandDef, CommandHandleFn, CommandHandleFuture, CommandHandler, CommandOutput, CommonMessage,
     DynCommandHandleFn, FromCommandArg, FromCommonMessage, MessageFrom, ReplyingMessage,
     ReplyingType,
 };
 
 #[cfg(feature = "command-plugin")]
-pub use qqbot_sdk_commands::CommandPlugin;
+pub use dorimubot_commands::CommandPlugin;
 
 #[cfg(feature = "macros")]
-pub use qqbot_sdk_commands::command;
+pub use dorimubot_commands::command;
 
 #[cfg(feature = "app")]
-pub use qqbot_sdk_app::{
+pub use dorimubot_app::{
     AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, QQBotApp, SandboxConfig,
 };
 
@@ -50,4 +50,4 @@ pub use qqbot_sdk_app::{
 pub use inventory;
 
 #[cfg(feature = "axum-runner")]
-pub use qqbot_sdk_axum::{run_application, run_application_with_router};
+pub use dorimubot_axum::{run_application, run_application_with_router};

@@ -5,7 +5,7 @@ use qqbot_rust_sdk::openapi::{
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::config::{QQBotConfig, CredentialConfig, ListeningConfig};
+use crate::config::{CredentialConfig, ListeningConfig, QQBotConfig};
 
 pub type QQApiCLient = OpenApi<HttpTokenProvider>;
 

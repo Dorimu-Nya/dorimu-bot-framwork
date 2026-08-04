@@ -2,7 +2,7 @@ use crate::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
 };
-use dorimubot_framework::{QQApiCLient, QQBot};
+use dorimubot_framework_core::{QQApiCLient, QQBot};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::group::event::GroupEventKind;

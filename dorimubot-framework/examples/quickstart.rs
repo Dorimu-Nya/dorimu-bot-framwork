@@ -1,7 +1,7 @@
-use dorimubot_axum::run_application;
-use dorimubot_commands::ReplyingMessage::Text;
-use dorimubot_commands::{command, CommandPlugin, ReplyingMessage};
-use dorimubot_framework::{QQBotConfig, CredentialConfig, QQBot};
+use dorimubot_framework::ReplyingMessage::Text;
+use dorimubot_framework::{
+    command, run_application, CommandPlugin, CredentialConfig, QQBot, QQBotConfig, ReplyingMessage,
+};
 use qqbot_rust_sdk::openapi::models::message::{
     Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
     Permission, PermissionType, RenderData,

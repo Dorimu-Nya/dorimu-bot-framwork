@@ -1,15 +1,10 @@
-//! QQ bot SDK (webhook-first).
+//! All-in-one facade for DorimuBot Framework.
 
-mod app;
-mod config;
-mod dispatching;
-mod event_handler;
-mod event_registry;
-mod registering;
+pub use dorimubot_axum as axum;
+pub use dorimubot_commands as commands;
+pub use dorimubot_commands_macros as commands_macros;
+pub use dorimubot_framework_core as core;
 
-pub use app::{QQApiCLient, QQBot};
-pub use config::{QQBotConfig, CredentialConfig, ListeningConfig};
-pub use event_handler::{
-    AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, DynEventHandler, EventHandler,
-    EventHandlerFuture, SyncEventHandlerKind,
-};
+pub use dorimubot_axum::{run_application, run_application_with_router};
+pub use dorimubot_commands::*;
+pub use dorimubot_framework_core::*;

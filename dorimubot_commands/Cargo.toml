@@ -6,7 +6,7 @@ license.workspace = true
 description = "Command runtime support for DorimuBot Framework"
 
 [dependencies]
-dorimubot-framework = { path = "../dorimubot-framework" }
+dorimubot-framework-core = { path = "../dorimubot-framework-core" }
 dorimubot_commands_macros = { path = "../dorimubot_commands_macros" }
 inventory.workspace = true
 qqbot-rust-sdk = { workspace = true, features = ["events", "openapi"] }
@@ -14,5 +14,4 @@ serde.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
-serde_json.workspace = true
 tokio.workspace = true

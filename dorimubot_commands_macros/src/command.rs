@@ -1,4 +1,5 @@
 use proc_macro2::TokenStream;
+use proc_macro_crate::{crate_name, FoundCrate};
 use quote::{format_ident, quote};
 use syn::{parse::Parse, parse::ParseStream, FnArg, ItemFn, LitStr, Result};
 
@@ -36,6 +37,7 @@ pub fn command_impl(args: CommandArgs, func: ItemFn) -> TokenStream {
     // 生成包装函数的名称
     let wrapper_name = format_ident!("__dorimubot_framework_command_wrapper_{}", fn_name);
     let is_async = func.sig.asyncness.is_some();
+    let commands = commands_crate_path();
 
     let mut param_extractions = Vec::new();
     let mut call_args = Vec::new();
@@ -49,7 +51,7 @@ pub fn command_impl(args: CommandArgs, func: ItemFn) -> TokenStream {
                 let ty = &typed.ty;
                 let arg_name = format_ident!("__arg_{}", index);
                 param_extractions.push(quote! {
-                    let #arg_name: #ty = <#ty as dorimubot_commands::FromCommonMessage<'_>>::from(__message);
+                    let #arg_name: #ty = <#ty as #commands::FromCommonMessage<'_>>::from(__message);
                 });
                 call_args.push(quote! { #arg_name });
             }
@@ -76,23 +78,43 @@ pub fn command_impl(args: CommandArgs, func: ItemFn) -> TokenStream {
         const _: () = {
             // 包装函数：接收消息并返回 Future
             fn #wrapper_name<'a>(
-                __message: &'a dyn dorimubot_commands::CommonMessage,
-            ) -> dorimubot_commands::CommandHandleFuture<'a> {
+                __message: &'a dyn #commands::CommonMessage,
+            ) -> #commands::CommandHandleFuture<'a> {
                 ::std::boxed::Box::pin(async move {
                     #(#param_extractions)*
                     #invoke
                     // 将结果转换为统一的输出格式
-                    dorimubot_commands::CommandOutput::into_output(result)
+                    #commands::CommandOutput::into_output(result)
                 })
             }
 
             // 使用 inventory 注册命令
-            dorimubot_commands::inventory::submit! {
-                dorimubot_commands::CommandDef {
+            #commands::inventory::submit! {
+                #commands::CommandDef {
                     prefix: #prefix,
                     handler: #wrapper_name
                 }
             }
         };
+    }
+}
+
+fn commands_crate_path() -> TokenStream {
+    match crate_name("dorimubot_commands") {
+        Ok(FoundCrate::Itself) => quote!(crate),
+        Ok(FoundCrate::Name(name)) => {
+            let name = format_ident!("{}", name);
+            quote!(::#name)
+        }
+        Err(_) => match crate_name("dorimubot-framework") {
+            Ok(FoundCrate::Itself) => quote!(crate::commands),
+            Ok(FoundCrate::Name(name)) => {
+                let name = format_ident!("{}", name);
+                quote!(::#name::commands)
+            }
+            Err(error) => panic!(
+                "#[command] requires either dorimubot_commands or dorimubot-framework: {error}"
+            ),
+        },
     }
 }

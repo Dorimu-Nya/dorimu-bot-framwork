@@ -1,4 +1,4 @@
-use dorimubot_framework::{QQBotConfig, QQBot};
+use dorimubot_framework_core::{QQBot, QQBotConfig};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};

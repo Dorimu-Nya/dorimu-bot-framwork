@@ -1,6 +1,6 @@
 use axum::routing::any;
 use axum::{Json, Router};
-use dorimubot_framework::QQBot;
+use dorimubot_framework_core::QQBot;
 use qqbot_rust_sdk::events::payload::payload::WebhookPayload;
 use std::sync::Arc;
 use tracing::info;
@@ -11,7 +11,7 @@ use tracing::info;
 /// * `base_router` axum的router，当为Some时，将会以其为基础构造axum的路由
 /// example:
 /// ```no_run
-/// use dorimubot_framework::{QQBotConfig, CredentialConfig, QQBot};
+/// use dorimubot_framework_core::{QQBotConfig, CredentialConfig, QQBot};
 /// use dorimubot_axum::run_application;
 /// #[tokio::main]
 /// async fn main() -> std::io::Result<()> {

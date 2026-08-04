@@ -10,29 +10,30 @@
 git submodule add https://github.com/Dorimu-Nya/dorimubot-framework dorimubot-framework
 ```
 
-随后，在 `Cargo.toml` 的 `dependencies` 区块 添加
+随后，在 `Cargo.toml` 的 `dependencies` 区块添加门面 crate：
 
 ```toml
 dorimubot-framework = { path = "./dorimubot-framework/dorimubot-framework" }
-dorimubot_commands = { path = "./dorimubot-framework/dorimubot_commands" }
 ```
+
+该 crate 统一重新导出了 core、Axum 集成和 commands；也可通过
+`dorimubot_framework::{core, axum, commands}` 分模块访问。
 
 ## 消息指令
 
-命令功能位于独立的 `dorimubot_commands` crate，需要显式注册到应用：
+命令功能由门面 crate 统一导出，需要显式注册到应用：
 
 ```rust
-use dorimubot_commands::{CommandPlugin, ReplyingMessage};
-use dorimubot_framework::{AppConfig, QQBotApp};
+use dorimubot_framework::{CommandPlugin, QQBot, QQBotConfig, ReplyingMessage};
 
 let command_plugin = CommandPlugin::new()
     .with_command("/ping", || ReplyingMessage::Text("Pong!".to_string()));
 
-let app = QQBotApp::new(AppConfig::new());
+let app = QQBot::new(QQBotConfig::new());
 command_plugin.register(&app);
 ```
 
-`#[command(...)]` 注册的命令也会在 `CommandPlugin::register` 时一并收集。依赖方向保持为 `dorimubot_commands -> dorimubot-framework`，framework 不反向依赖 commands。
+`#[command(...)]` 注册的命令也会在 `CommandPlugin::register` 时一并收集。底层依赖方向保持为 `dorimubot_commands -> dorimubot-framework-core`，门面 crate 负责组合并导出各功能 crate。
 
 需要共享状态时，直接通过 `Arc` 和闭包显式捕获：
 

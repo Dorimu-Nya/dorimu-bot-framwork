@@ -3,13 +3,14 @@ name = "dorimubot-framework"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "基于 qqbot-rust-sdk 开发的QQ机器人开发框架"
+description = "All-in-one facade for DorimuBot Framework"
 
 [dependencies]
-qqbot-rust-sdk = { workspace = true, features = ["events", "openapi", "signature"] }
-serde.workspace = true
-tracing.workspace = true
+dorimubot-framework-core = { path = "../dorimubot-framework-core" }
+dorimubot_axum = { path = "../dorimubot_axum" }
+dorimubot_commands = { path = "../dorimubot_commands" }
+dorimubot_commands_macros = { path = "../dorimubot_commands_macros" }
 
 [dev-dependencies]
-serde_json.workspace = true
+qqbot-rust-sdk = { workspace = true, features = ["openapi"] }
 tokio.workspace = true

@@ -1,11 +1,10 @@
-use crate::Plugin;
 use serde::Deserialize;
 
 /// 监听配置
 #[derive(Clone, Deserialize)]
 #[serde(default)]
 pub struct ListeningConfig {
-    /// actix监听地址, 如0.0.0.0:3000
+    /// 监听地址, 如0.0.0.0:3000
     pub bind_addr: String,
     /// webhook路径, 如/webhook
     pub webhook_path: String,
@@ -37,65 +36,29 @@ impl Default for CredentialConfig {
     }
 }
 
-#[derive(Clone)]
-pub struct SandboxConfig {
-    // TODO: 这里应该是放一些沙箱里的openid什么的或者拦截器？
-}
-
-impl Default for SandboxConfig {
-    fn default() -> Self {
-        Self {}
-    }
-}
-
-/// qqbot api地址覆盖配置
-#[derive(Clone, Deserialize)]
-#[serde(default)]
-pub struct QQApiOverrides {
-    pub prod_url_override: Option<String>,
-    pub sandbox_url_override: Option<String>,
-}
-
-impl Default for QQApiOverrides {
-    fn default() -> Self {
-        Self {
-            prod_url_override: None,
-            sandbox_url_override: None,
-        }
-    }
-}
-
 /// 应用配置
 #[derive(Deserialize)]
 #[serde(default)]
-pub struct AppConfig {
+pub struct QQBotConfig {
     /// 监听配置
     pub listening: ListeningConfig,
     /// qqbot票据配置
     pub credential: CredentialConfig,
-    /// 沙箱配置
-    #[serde(skip)]
-    pub sandbox_config: SandboxConfig,
     /// api地址覆写
-    pub api_overrides: QQApiOverrides,
-    /// 应用启动时注册的原生插件。
-    #[serde(skip)]
-    pub plugins: Vec<Box<dyn Plugin>>,
+    pub api_override: Option<String>,
 }
 
-impl Default for AppConfig {
+impl Default for QQBotConfig {
     fn default() -> Self {
         Self {
             listening: Default::default(),
             credential: Default::default(),
-            sandbox_config: Default::default(),
-            api_overrides: Default::default(),
-            plugins: vec![],
+            api_override: Default::default(),
         }
     }
 }
 
-impl AppConfig {
+impl QQBotConfig {
     /// 创建使用默认配置的应用构建器。
     pub fn new() -> Self {
         Self::default()
@@ -116,17 +79,8 @@ impl AppConfig {
         self
     }
 
-    pub fn prod_url_override(mut self, api: &str) -> Self {
-        self.api_overrides.prod_url_override = Some(api.to_string());
-        self
-    }
-
-    /// 添加一个在应用初始化时加载的原生插件。
-    pub fn with_plugin<P>(mut self, plugin: P) -> Self
-    where
-        P: Plugin,
-    {
-        self.plugins.push(Box::new(plugin));
+    pub fn api_override(mut self, api: &str) -> Self {
+        self.api_override = Some(api.to_string());
         self
     }
 }

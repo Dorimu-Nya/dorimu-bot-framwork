@@ -1,4 +1,4 @@
-use dorimubot_framework::{AppConfig, QQBotApp};
+use dorimubot_framework::{QQBotConfig, QQBot};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
@@ -8,11 +8,11 @@ static HANDLER_CALLS: AtomicUsize = AtomicUsize::new(0);
 
 #[tokio::test]
 async fn registers_event_handlers_with_supported_signatures() {
-    let app = QQBotApp::new(AppConfig::default());
+    let app = QQBot::new(QQBotConfig::default());
 
-    app.registe_event_handler(C2cEventKind::C2cMessageCreate, handler_without_arguments);
-    app.registe_event_handler(C2cEventKind::C2cMessageCreate, handler_with_payload);
-    app.registe_event_handler(C2cEventKind::C2cMessageCreate, handler_with_event_detail);
+    app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_without_arguments);
+    app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_with_payload);
+    app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_with_event_detail);
 
     HANDLER_CALLS.store(0, Ordering::SeqCst);
     app.webhook_handler(WebhookPayload::Dispatch(c2c_payload()))

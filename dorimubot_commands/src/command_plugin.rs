@@ -2,18 +2,16 @@ use crate::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
 };
-use dorimubot_framework::events::c2c::event::C2cEventKind;
-use dorimubot_framework::events::c2c::models::C2cMessage;
-use dorimubot_framework::events::group::event::GroupEventKind;
-use dorimubot_framework::events::group::models::GroupMessage;
-use dorimubot_framework::tracing::{error, info, warn};
-use dorimubot_framework::{Plugin, QQApiCLient, QQBotApp};
+use dorimubot_framework::{QQApiCLient, QQBot};
+use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::group::event::GroupEventKind;
+use qqbot_rust_sdk::events::group::models::GroupMessage;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tracing::{error, info, warn};
 
-/// 将命令表适配为消息事件处理器的插件。
-///
-/// 只有通过 [`dorimubot_framework::AppConfig::with_plugin`] 显式加载后，命令才会执行。
+/// 将命令表注册为消息事件处理器。
 pub struct CommandPlugin {
     commands: HashMap<&'static str, DynCommandHandleFn>,
     ignore_checking: bool,
@@ -49,6 +47,42 @@ impl CommandPlugin {
             panic!("Command {:?} duplicated", prefix);
         }
         self
+    }
+
+    /// 将命令处理器注册到应用。
+    pub fn register(&self, app: &QQBot) {
+        let mut commands = HashMap::new();
+
+        for command in inventory::iter::<CommandDef> {
+            let replaced = commands.insert(command.prefix, wrap_command_handle_fn(command.handler));
+            if !self.ignore_checking && replaced.is_some() {
+                panic!("Command {:?} duplicated", command.prefix);
+            }
+        }
+
+        for (prefix, handler) in &self.commands {
+            let replaced = commands.insert(*prefix, Arc::clone(handler));
+            if !self.ignore_checking && replaced.is_some() {
+                panic!("Command {:?} duplicated", prefix);
+            }
+        }
+
+        let commands = CommandsStore::new(commands);
+
+        let api = app.get_api_client();
+        let c2c_commands = commands.clone();
+        app.register_event_handler(C2cEventKind::C2cMessageCreate, move |message| {
+            let api = Arc::clone(&api);
+            let commands = c2c_commands.clone();
+            async move { Self::handle_c2c(message, api, commands).await }
+        });
+
+        let api = app.get_api_client();
+        app.register_event_handler(GroupEventKind::GroupAtMessageCreate, move |message| {
+            let api = Arc::clone(&api);
+            let commands = commands.clone();
+            async move { Self::handle_group(message, api, commands).await }
+        });
     }
 
     async fn handle_c2c(message: C2cMessage, api: Arc<QQApiCLient>, commands: CommandsStore) {
@@ -91,42 +125,5 @@ impl CommandPlugin {
                 None
             }
         }
-    }
-}
-
-impl Plugin for CommandPlugin {
-    fn register(&self, app: &QQBotApp) {
-        let mut commands = HashMap::new();
-
-        for command in dorimubot_framework::inventory::iter::<CommandDef> {
-            let replaced = commands.insert(command.prefix, wrap_command_handle_fn(command.handler));
-            if !self.ignore_checking && replaced.is_some() {
-                panic!("Command {:?} duplicated", command.prefix);
-            }
-        }
-
-        for (prefix, handler) in &self.commands {
-            let replaced = commands.insert(*prefix, Arc::clone(handler));
-            if !self.ignore_checking && replaced.is_some() {
-                panic!("Command {:?} duplicated", prefix);
-            }
-        }
-
-        let commands = CommandsStore::new(commands);
-
-        let api = app.get_api_client();
-        let c2c_commands = commands.clone();
-        app.registe_event_handler(C2cEventKind::C2cMessageCreate, move |message| {
-            let api = Arc::clone(&api);
-            let commands = c2c_commands.clone();
-            async move { Self::handle_c2c(message, api, commands).await }
-        });
-
-        let api = app.get_api_client();
-        app.registe_event_handler(GroupEventKind::GroupAtMessageCreate, move |message| {
-            let api = Arc::clone(&api);
-            let commands = commands.clone();
-            async move { Self::handle_group(message, api, commands).await }
-        });
     }
 }

@@ -1,6 +1,6 @@
-use dorimubot_framework::events::c2c::models::C2cMessage;
-use dorimubot_framework::events::common::MessageAttachment;
-use dorimubot_framework::events::group::models::GroupMessage;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::common::MessageAttachment;
+use qqbot_rust_sdk::events::group::models::GroupMessage;
 
 /// 消息来源，用于统一命令处理的消息抽象。
 pub enum MessageFrom {

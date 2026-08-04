@@ -1,39 +1,39 @@
 use axum::routing::any;
 use axum::{Json, Router};
-use dorimubot_framework::{AppConfig, QQBotApp, WebhookPayload};
+use dorimubot_framework::QQBot;
+use qqbot_rust_sdk::events::payload::payload::WebhookPayload;
 use std::sync::Arc;
 use tracing::info;
 
 /// 启动基于Axum的 QQ Bot 程序
 ///
-/// * `config` - 程序配置
+/// * `app` - 已完成事件和命令注册的应用
 /// * `base_router` axum的router，当为Some时，将会以其为基础构造axum的路由
 /// example:
 /// ```no_run
-/// use dorimubot_framework::{AppConfig, CredentialConfig};
+/// use dorimubot_framework::{QQBotConfig, CredentialConfig, QQBot};
 /// use dorimubot_axum::run_application;
 /// #[tokio::main]
 /// async fn main() -> std::io::Result<()> {
-///     let config = AppConfig {
+///     let config = QQBotConfig {
 ///         credential: CredentialConfig {
 ///             app_id: "YOUR APP ID".to_string(),
 ///             secret: "YOUR SECRET".to_string(),
 ///         },
 ///         ..Default::default()
 ///     };
-///     run_application(config).await
+///     run_application(QQBot::new(config)).await
 /// }
 /// ```
 pub async fn run_application_with_router(
-    config: AppConfig,
+    app: QQBot,
     base_router: Option<Router>,
 ) -> std::io::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let webhook_path = config.listening.webhook_path.clone();
-    let bind_addr = config.listening.bind_addr.clone();
-
-    let app = Arc::new(QQBotApp::new(config));
+    let webhook_path = app.listening_config().webhook_path.clone();
+    let bind_addr = app.listening_config().bind_addr.clone();
+    let app = Arc::new(app);
 
     let base_router = base_router.unwrap_or(Router::new());
     let router = base_router.route(
@@ -54,6 +54,6 @@ pub async fn run_application_with_router(
 /// 启动基于Axum的 QQ Bot 程序
 ///
 /// 将会用默认方式构造axum的router
-pub async fn run_application(config: AppConfig) -> std::io::Result<()> {
-    run_application_with_router(config, None).await
+pub async fn run_application(app: QQBot) -> std::io::Result<()> {
+    run_application_with_router(app, None).await
 }

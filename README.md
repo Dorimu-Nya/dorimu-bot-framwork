@@ -19,51 +19,27 @@ dorimubot_commands = { path = "./dorimubot-framework/dorimubot_commands" }
 
 ## 消息指令
 
-命令功能位于独立的 `dorimubot_commands` crate，需要显式创建并加载 `CommandPlugin`：
+命令功能位于独立的 `dorimubot_commands` crate，需要显式注册到应用：
 
 ```rust
 use dorimubot_commands::{CommandPlugin, ReplyingMessage};
-use dorimubot_framework::AppConfig;
+use dorimubot_framework::{AppConfig, QQBotApp};
 
 let command_plugin = CommandPlugin::new()
     .with_command("/ping", || ReplyingMessage::Text("Pong!".to_string()));
 
-let config = AppConfig::new().with_plugin(command_plugin);
+let app = QQBotApp::new(AppConfig::new());
+command_plugin.register(&app);
 ```
 
-`#[command(...)]` 注册的命令也会在 `CommandPlugin` 加载时一并收集。依赖方向保持为 `dorimubot_commands -> dorimubot-framework`，framework 不反向依赖 commands。
-
-## 插件
-
-插件直接在应用上注册事件处理器：
-
-```rust
-use dorimubot_framework::events::c2c::event::C2cEventKind;
-use dorimubot_framework::events::c2c::models::C2cMessage;
-use dorimubot_framework::{AppConfig, Plugin, QQBotApp};
-
-struct MyPlugin;
-
-impl Plugin for MyPlugin {
-    fn register(&self, app: &QQBotApp) {
-        app.registe_event_handler(
-            C2cEventKind::C2cMessageCreate,
-            |message: C2cMessage| async move {
-                println!("{:?}", message.content);
-            },
-        );
-    }
-}
-
-let config = AppConfig::new().with_plugin(MyPlugin);
-```
+`#[command(...)]` 注册的命令也会在 `CommandPlugin::register` 时一并收集。依赖方向保持为 `dorimubot_commands -> dorimubot-framework`，framework 不反向依赖 commands。
 
 需要共享状态时，直接通过 `Arc` 和闭包显式捕获：
 
 ```rust
 let state = Arc::new(YourState::new());
 let handler_state = Arc::clone(&state);
-app.registe_event_handler(C2cEventKind::C2cMessageCreate, move |message: C2cMessage| {
+app.register_event_handler(C2cEventKind::C2cMessageCreate, move |message: C2cMessage| {
     let state = Arc::clone(&handler_state);
     async move {
         state.handle(message).await;

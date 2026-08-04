@@ -1,12 +1,14 @@
-use dorimubot_framework::events::c2c::event::C2cEventKind;
-use dorimubot_framework::models::UploadMediaRequest;
-use dorimubot_framework::{
-    DispatchPayload, EventKind, FromDispatchPayload, HttpTokenProvider, OpenApi, Result,
-    WebhookPayload,
+use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
+use qqbot_rust_sdk::events::payload::event::EventKind;
+use qqbot_rust_sdk::events::payload::payload::{
+    DispatchPayload, FromDispatchPayload, WebhookPayload,
 };
+use qqbot_rust_sdk::openapi::error::Result;
+use qqbot_rust_sdk::openapi::models::UploadMediaRequest;
+use qqbot_rust_sdk::openapi::{HttpTokenProvider, OpenApi};
 
 #[test]
-fn core_sdk_types_remain_available_from_the_facade() {
+fn core_sdk_types_are_imported_from_the_sdk() {
     let _: EventKind = C2cEventKind::C2cMessageCreate.into();
 
     fn accepts_payload(_: Option<DispatchPayload>) {}

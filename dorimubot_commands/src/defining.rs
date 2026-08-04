@@ -192,4 +192,4 @@ pub struct CommandDef {
     pub handler: CommandHandleFn,
 }
 
-dorimubot_framework::inventory::collect!(CommandDef);
+inventory::collect!(CommandDef);

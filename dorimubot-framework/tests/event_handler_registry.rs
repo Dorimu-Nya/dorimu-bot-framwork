@@ -1,4 +1,4 @@
-use dorimubot_framework::{AppConfig, Plugin, QQBotApp};
+use dorimubot_framework::{QQBotConfig, QQBot};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
@@ -8,30 +8,24 @@ use std::sync::Arc;
 struct HandlerState {
     called: AtomicUsize,
 }
-struct EventPlugin {
-    state: Arc<HandlerState>,
-}
-
-impl Plugin for EventPlugin {
-    fn register(&self, app: &QQBotApp) {
-        let state = Arc::clone(&self.state);
-        app.registe_event_handler(
+fn app(register_handler: bool) -> (QQBot, Arc<HandlerState>) {
+    let state = Arc::new(HandlerState {
+        called: AtomicUsize::new(0),
+    });
+    let app = QQBot::new(QQBotConfig::new());
+    if register_handler {
+        let handler_state = Arc::clone(&state);
+        app.register_event_handler(
             C2cEventKind::C2cMessageCreate,
             move |_message: C2cMessage| {
-                let state = Arc::clone(&state);
+                let state = Arc::clone(&handler_state);
                 async move {
                     state.called.fetch_add(1, Ordering::SeqCst);
                 }
             },
         );
     }
-}
-
-fn app() -> (QQBotApp, Arc<HandlerState>) {
-    let state = Arc::new(HandlerState {
-        called: AtomicUsize::new(0),
-    });
-    (QQBotApp::new(AppConfig::new()), state)
+    (app, state)
 }
 
 fn c2c_payload() -> DispatchPayload {
@@ -57,11 +51,8 @@ fn c2c_payload() -> DispatchPayload {
 
 #[tokio::test]
 async fn event_handlers_are_scoped_to_the_registered_app() {
-    let (registered_app, registered_state) = app();
-    let (unregistered_app, unregistered_state) = app();
-    registered_app.registe_plugin(&EventPlugin {
-        state: Arc::clone(&registered_state),
-    });
+    let (registered_app, registered_state) = app(true);
+    let (unregistered_app, unregistered_state) = app(false);
 
     unregistered_app
         .webhook_handler(WebhookPayload::Dispatch(c2c_payload()))

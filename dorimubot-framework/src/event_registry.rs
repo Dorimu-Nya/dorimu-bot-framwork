@@ -5,7 +5,7 @@ use std::sync::{Arc, RwLock};
 
 /// 按事件类型保存处理器的线程安全注册表。
 #[derive(Clone, Default)]
-pub struct EventHandlerRegistry {
+pub(crate) struct EventHandlerRegistry {
     handlers: Arc<RwLock<HashMap<EventKind, Vec<DynEventHandler>>>>,
 }
 
@@ -14,7 +14,7 @@ impl EventHandlerRegistry {
         Self::default()
     }
 
-    pub fn register<K, Args, Kind, H>(&self, kind: K, handler: H)
+    pub(crate) fn register<K, Args, Kind, H>(&self, kind: K, handler: H)
     where
         K: Into<EventKind>,
         H: EventHandler<Args, Kind>,
@@ -22,7 +22,7 @@ impl EventHandlerRegistry {
         self.register_dyn(kind, handler.into_dyn());
     }
 
-    pub fn register_dyn<K>(&self, kind: K, handler: DynEventHandler)
+    fn register_dyn<K>(&self, kind: K, handler: DynEventHandler)
     where
         K: Into<EventKind>,
     {
@@ -34,7 +34,7 @@ impl EventHandlerRegistry {
             .push(handler);
     }
 
-    pub fn handlers_for<K>(&self, kind: K) -> Vec<DynEventHandler>
+    pub(crate) fn get_handlers<K>(&self, kind: K) -> Vec<DynEventHandler>
     where
         K: Into<EventKind>,
     {

@@ -1,11 +1,11 @@
 use dorimubot_axum::run_application;
 use dorimubot_commands::ReplyingMessage::Text;
 use dorimubot_commands::{command, CommandPlugin, ReplyingMessage};
-use dorimubot_framework::models::message::{
+use dorimubot_framework::{QQBotConfig, CredentialConfig, QQBot};
+use qqbot_rust_sdk::openapi::models::message::{
     Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
     Permission, PermissionType, RenderData,
 };
-use dorimubot_framework::{AppConfig, CredentialConfig};
 use std::sync::atomic::{AtomicI16, Ordering};
 use std::sync::Arc;
 
@@ -58,17 +58,18 @@ async fn main() -> std::io::Result<()> {
             Text(format!("Current {value}"))
         });
 
-    let config = AppConfig::new()
+    let config = QQBotConfig::new()
         .credential(CredentialConfig {
             app_id: "".to_string(),
             secret: "".to_string(),
         })
         .bind_addr("0.0.0.0:3000")
         .webhook_path("/webhook")
-        .prod_url_override("https://sandbox.api.sgroup.qq.com")
-        .with_plugin(command_plugin);
+        .api_override("https://sandbox.api.sgroup.qq.com");
 
-    run_application(config).await
+    let app = QQBot::new(config);
+    command_plugin.register(&app);
+    run_application(app).await
 }
 
 #[command("/ping")]

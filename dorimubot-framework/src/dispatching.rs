@@ -1,10 +1,10 @@
-use crate::app::QQBotApp;
+use crate::app::QQBot;
 use qqbot_rust_sdk::events::payload::event::{Event, EventKind};
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
 use qqbot_rust_sdk::events::validation::{ValidationRequest, ValidationResponse};
 use tracing::debug;
 
-impl QQBotApp {
+impl QQBot {
     /// Webhook 的第一层 opcode 分发。
     pub async fn webhook_handler(&self, payload: WebhookPayload) -> Option<ValidationResponse> {
         debug!("收到Webhook事件: {:?}", payload);
@@ -21,7 +21,7 @@ impl QQBotApp {
     }
 
     /// 处理腾讯端请求签名校验。
-    pub fn handle_address_verify(
+    fn handle_address_verify(
         &self,
         req: ValidationRequest,
     ) -> Result<ValidationResponse, Box<dyn std::error::Error>> {
@@ -54,7 +54,7 @@ impl QQBotApp {
     where
         K: Into<EventKind>,
     {
-        for handler in self.event_handlers.handlers_for(kind) {
+        for handler in self.event_handlers.get_handlers(kind) {
             handler(payload).await
         }
     }

@@ -1,6 +1,6 @@
 use dorimubot_commands::{CommandHandler, CommandsStore, DynCommandHandleFn, ReplyingMessage};
-use dorimubot_framework::events::c2c::models::C2cMessage;
-use dorimubot_framework::events::common::User;
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::common::User;
 use std::collections::HashMap;
 
 fn command_message(content: &str) -> C2cMessage {

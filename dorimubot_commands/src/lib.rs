@@ -1,6 +1,6 @@
-pub use dorimubot_framework::command;
+pub use dorimubot_commands_macros::command;
 #[doc(hidden)]
-pub use dorimubot_framework::inventory;
+pub use inventory;
 
 mod command_plugin;
 pub mod common;

@@ -1,5 +1,5 @@
-use dorimubot_framework::openapi::models::message::MessageType;
-use dorimubot_framework::openapi::models::message::{
+use qqbot_rust_sdk::openapi::models::message::MessageType;
+use qqbot_rust_sdk::openapi::models::message::{
     MessageArk, MessageEmbed, MessageMarkdown, MessageMedia, SendMessageRequest,
 };
 
@@ -19,10 +19,8 @@ pub enum ReplyingType {
 /// - `Ark`：Ark 模板消息
 /// - `Embed`：嵌入卡片消息
 /// - `Media`：媒体消息
-#[derive(
-    Debug, Clone, dorimubot_framework::serde::Serialize, dorimubot_framework::serde::Deserialize,
-)]
-#[serde(crate = "dorimubot_framework::serde", untagged)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
 pub enum ReplyingMessage {
     /// 纯文本消息。
     Text(String),

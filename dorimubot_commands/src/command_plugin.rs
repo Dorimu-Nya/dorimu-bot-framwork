@@ -7,7 +7,7 @@ use dorimubot_framework::events::c2c::models::C2cMessage;
 use dorimubot_framework::events::group::event::GroupEventKind;
 use dorimubot_framework::events::group::models::GroupMessage;
 use dorimubot_framework::tracing::{error, info, warn};
-use dorimubot_framework::{Depend, DependStore, Plugin, PluginRegistrar, QQApiCLient};
+use dorimubot_framework::{Plugin, QQApiCLient, QQBotApp};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -33,7 +33,7 @@ impl CommandPlugin {
         }
     }
 
-    /// 配置是否忽略重复命令和依赖检查。
+    /// 配置是否忽略重复命令检查。
     pub fn ignore_checking(mut self, ignore: bool) -> Self {
         self.ignore_checking = ignore;
         self
@@ -51,13 +51,8 @@ impl CommandPlugin {
         self
     }
 
-    async fn handle_c2c(
-        message: C2cMessage,
-        api: Depend<QQApiCLient>,
-        commands: Depend<CommandsStore>,
-        dependencies: DependStore,
-    ) {
-        if let Some(reply) = Self::handle_message(&message, &commands, &dependencies).await {
+    async fn handle_c2c(message: C2cMessage, api: Arc<QQApiCLient>, commands: CommandsStore) {
+        if let Some(reply) = Self::handle_message(&message, &commands).await {
             let body = reply.to_request(Some(message.id.clone()), Some(1));
             let result = api
                 .c2c_messages()
@@ -67,13 +62,8 @@ impl CommandPlugin {
         }
     }
 
-    async fn handle_group(
-        message: GroupMessage,
-        api: Depend<QQApiCLient>,
-        commands: Depend<CommandsStore>,
-        dependencies: DependStore,
-    ) {
-        if let Some(reply) = Self::handle_message(&message, &commands, &dependencies).await {
+    async fn handle_group(message: GroupMessage, api: Arc<QQApiCLient>, commands: CommandsStore) {
+        if let Some(reply) = Self::handle_message(&message, &commands).await {
             let body = reply.to_request(Some(message.id.clone()), Some(1));
             let result = api
                 .group_messages()
@@ -86,7 +76,6 @@ impl CommandPlugin {
     async fn handle_message(
         message: &dyn crate::CommonMessage,
         commands: &CommandsStore,
-        dependencies: &DependStore,
     ) -> Option<ReplyingMessage> {
         let content = message.get_content().as_deref()?;
         let command = content.split_whitespace().next()?;
@@ -95,7 +84,7 @@ impl CommandPlugin {
             return None;
         };
 
-        match handler(message, dependencies).await {
+        match handler(message).await {
             Ok(reply) => reply,
             Err(err) => {
                 error!("处理指令{}出错: {}", content, err);
@@ -106,7 +95,7 @@ impl CommandPlugin {
 }
 
 impl Plugin for CommandPlugin {
-    fn register(&self, registrar: &PluginRegistrar<'_>) {
+    fn register(&self, app: &QQBotApp) {
         let mut commands = HashMap::new();
 
         for command in dorimubot_framework::inventory::iter::<CommandDef> {
@@ -123,15 +112,21 @@ impl Plugin for CommandPlugin {
             }
         }
 
-        let replaced = registrar.insert_dependency(CommandsStore::new(commands));
-        if !self.ignore_checking && replaced.is_some() {
-            panic!(
-                "Depend {:?} duplicated",
-                std::any::type_name::<CommandsStore>()
-            );
-        }
+        let commands = CommandsStore::new(commands);
 
-        registrar.register_event_handler(C2cEventKind::C2cMessageCreate, Self::handle_c2c);
-        registrar.register_event_handler(GroupEventKind::GroupAtMessageCreate, Self::handle_group);
+        let api = app.get_api_client();
+        let c2c_commands = commands.clone();
+        app.registe_event_handler(C2cEventKind::C2cMessageCreate, move |message| {
+            let api = Arc::clone(&api);
+            let commands = c2c_commands.clone();
+            async move { Self::handle_c2c(message, api, commands).await }
+        });
+
+        let api = app.get_api_client();
+        app.registe_event_handler(GroupEventKind::GroupAtMessageCreate, move |message| {
+            let api = Arc::clone(&api);
+            let commands = commands.clone();
+            async move { Self::handle_group(message, api, commands).await }
+        });
     }
 }

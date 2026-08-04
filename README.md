@@ -35,18 +35,18 @@ let config = AppConfig::new().with_plugin(command_plugin);
 
 ## 插件
 
-插件通过 framework 提供的注册器声明事件处理器：
+插件直接在应用上注册事件处理器：
 
 ```rust
 use dorimubot_framework::events::c2c::event::C2cEventKind;
 use dorimubot_framework::events::c2c::models::C2cMessage;
-use dorimubot_framework::{AppConfig, Plugin, PluginRegistrar};
+use dorimubot_framework::{AppConfig, Plugin, QQBotApp};
 
 struct MyPlugin;
 
 impl Plugin for MyPlugin {
-    fn register(&self, registrar: &PluginRegistrar<'_>) {
-        registrar.register_event_handler(
+    fn register(&self, app: &QQBotApp) {
+        app.registe_event_handler(
             C2cEventKind::C2cMessageCreate,
             |message: C2cMessage| async move {
                 println!("{:?}", message.content);
@@ -58,30 +58,23 @@ impl Plugin for MyPlugin {
 let config = AppConfig::new().with_plugin(MyPlugin);
 ```
 
-## 依赖注入
-类似于actix/axum的状态注入，可以存储像数据库连接池等对象。
-首先需要在初始化 AppConfig 时使用 `with_depend`
+需要共享状态时，直接通过 `Arc` 和闭包显式捕获：
 
 ```rust
-pub struct YourState;
-
-let config = AppConfig::new();
-//Your other config...
-let config = config.with_depend(Depend::new(YourState));
+let state = Arc::new(YourState::new());
+let handler_state = Arc::clone(&state);
+app.registe_event_handler(C2cEventKind::C2cMessageCreate, move |message: C2cMessage| {
+    let state = Arc::clone(&handler_state);
+    async move {
+        state.handle(message).await;
+    }
+});
 ```
-可以在事件处理器中使用：
-```rust
-async fn on_message(message: C2cMessage, state: Depend<YourState>) {
-    // Your biz logic...
-}
-```
-
-普通事件参数从 webhook payload 提取，`Depend<T>` 从 framework 依赖容器提取。
 
 ## 当前开发目标和进度
 
 - [x] Webhook 事件的解析和处理函数
-- [x] 事件处理函数注册和依赖注入
+- [x] 事件处理函数注册
 - [ ] open api 部分的代码指令提高和文档
 - [x] 应用项目的启动参数的解析传递
 - [ ] 其他事件的处理

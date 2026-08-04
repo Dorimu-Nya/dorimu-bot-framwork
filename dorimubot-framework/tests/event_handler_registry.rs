@@ -1,29 +1,37 @@
-use dorimubot_framework::{AppConfig, Depend, Plugin, PluginRegistrar, QQBotApp};
+use dorimubot_framework::{AppConfig, Plugin, QQBotApp};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 
 struct HandlerState {
     called: AtomicUsize,
 }
-struct EventPlugin;
+struct EventPlugin {
+    state: Arc<HandlerState>,
+}
 
 impl Plugin for EventPlugin {
-    fn register(&self, registrar: &PluginRegistrar<'_>) {
-        registrar.register_event_handler(
+    fn register(&self, app: &QQBotApp) {
+        let state = Arc::clone(&self.state);
+        app.registe_event_handler(
             C2cEventKind::C2cMessageCreate,
-            |_message: C2cMessage, state: Depend<HandlerState>| async move {
-                state.called.fetch_add(1, Ordering::SeqCst);
+            move |_message: C2cMessage| {
+                let state = Arc::clone(&state);
+                async move {
+                    state.called.fetch_add(1, Ordering::SeqCst);
+                }
             },
         );
     }
 }
 
-fn app() -> QQBotApp {
-    QQBotApp::new(AppConfig::new().with_depend(Depend::new(HandlerState {
+fn app() -> (QQBotApp, Arc<HandlerState>) {
+    let state = Arc::new(HandlerState {
         called: AtomicUsize::new(0),
-    })))
+    });
+    (QQBotApp::new(AppConfig::new()), state)
 }
 
 fn c2c_payload() -> DispatchPayload {
@@ -49,9 +57,11 @@ fn c2c_payload() -> DispatchPayload {
 
 #[tokio::test]
 async fn event_handlers_are_scoped_to_the_registered_app() {
-    let registered_app = app();
-    let unregistered_app = app();
-    registered_app.registe_plugin(&EventPlugin);
+    let (registered_app, registered_state) = app();
+    let (unregistered_app, unregistered_state) = app();
+    registered_app.registe_plugin(&EventPlugin {
+        state: Arc::clone(&registered_state),
+    });
 
     unregistered_app
         .webhook_handler(WebhookPayload::Dispatch(c2c_payload()))
@@ -60,20 +70,6 @@ async fn event_handlers_are_scoped_to_the_registered_app() {
         .webhook_handler(WebhookPayload::Dispatch(c2c_payload()))
         .await;
 
-    assert_eq!(
-        unregistered_app
-            .depend_store
-            .get::<HandlerState>()
-            .called
-            .load(Ordering::SeqCst),
-        0
-    );
-    assert_eq!(
-        registered_app
-            .depend_store
-            .get::<HandlerState>()
-            .called
-            .load(Ordering::SeqCst),
-        1
-    );
+    assert_eq!(unregistered_state.called.load(Ordering::SeqCst), 0);
+    assert_eq!(registered_state.called.load(Ordering::SeqCst), 1);
 }

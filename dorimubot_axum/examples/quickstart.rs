@@ -1,16 +1,13 @@
-use base64::engine::general_purpose;
-use base64::Engine;
 use dorimubot_axum::run_application;
-use dorimubot_commands::ReplyingMessage::{Media, Text};
-use dorimubot_commands::{command, CommandPlugin, CommonMessage, ReplyingMessage};
+use dorimubot_commands::ReplyingMessage::Text;
+use dorimubot_commands::{command, CommandPlugin, ReplyingMessage};
 use dorimubot_framework::models::message::{
     Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
-    MessageMedia, Permission, PermissionType, RenderData,
+    Permission, PermissionType, RenderData,
 };
-use dorimubot_framework::models::UploadMediaRequest;
-use dorimubot_framework::{AppConfig, CredentialConfig, Depend, HttpTokenProvider, OpenApi};
-use std::fs;
+use dorimubot_framework::{AppConfig, CredentialConfig};
 use std::sync::atomic::{AtomicI16, Ordering};
+use std::sync::Arc;
 
 struct CustomState {
     pub value: AtomicI16,
@@ -50,9 +47,16 @@ async fn main() -> std::io::Result<()> {
     let moon_hi = HelloCmd {
         location: "Moon".to_string(),
     };
+    let state = Arc::new(CustomState::new());
+    let counting_state = Arc::clone(&state);
     let command_plugin = CommandPlugin::new()
         .with_command("/hi1", move || earth_hi.say_hi())
-        .with_command("/hi2", move || moon_hi.say_hi());
+        .with_command("/hi2", move || moon_hi.say_hi())
+        .with_command("/counting", move || {
+            let value = counting_state.value.load(Ordering::SeqCst);
+            counting_state.plus();
+            Text(format!("Current {value}"))
+        });
 
     let config = AppConfig::new()
         .credential(CredentialConfig {
@@ -62,7 +66,6 @@ async fn main() -> std::io::Result<()> {
         .bind_addr("0.0.0.0:3000")
         .webhook_path("/webhook")
         .prod_url_override("https://sandbox.api.sgroup.qq.com")
-        .with_depend(Depend::new(CustomState::new()))
         .with_plugin(command_plugin);
 
     run_application(config).await
@@ -80,21 +83,6 @@ fn asd(msg: Option<Vec<String>>) -> ReplyingMessage {
     } else {
         Text(String::from("I can't know your name."))
     }
-}
-
-#[command("/couting")]
-fn counting(state: Depend<CustomState>) -> ReplyingMessage {
-    let v = state.value.load(Ordering::SeqCst);
-    state.plus();
-    Text(String::from("Current ") + String::from(v.to_string()).as_str())
-}
-
-#[command("/me")]
-async fn me(
-    api: Depend<OpenApi<HttpTokenProvider>>,
-) -> dorimubot_framework::Result<ReplyingMessage> {
-    let (status, user) = api.users().me().await?;
-    Ok(Text(format!("status: {}\nme: {:#?}", status, user)))
 }
 
 #[command("/markdown")]
@@ -179,39 +167,4 @@ fn markdown() -> ReplyingMessage {
             },
         }),
     })
-}
-
-#[command("/image")]
-async fn image(
-    api: Depend<OpenApi<HttpTokenProvider>>,
-    msg: &dyn CommonMessage,
-) -> ReplyingMessage {
-    let image_bytes = fs::read("/root/image.jpg").unwrap();
-
-    let encoded = general_purpose::STANDARD.encode(image_bytes);
-
-    let data_url = format!("data:image/jpeg;base64,{}", encoded);
-
-    let resp = api
-        .media()
-        .upload_c2c(
-            msg.get_author_openid(),
-            &UploadMediaRequest {
-                file_type: 1,
-                url: String::from(""),
-                srv_send_msg: false,
-                file_data: Some(data_url),
-            },
-        )
-        .await;
-    println!("{:?}", resp);
-    match resp {
-        Ok(response) => {
-            // let file_uuid = response.1.file_info.unwrap_or("".to_string());
-            Media(MessageMedia {
-                file_info: response.1.file_info.unwrap(),
-            })
-        }
-        Err(_) => Text("上传失败".to_string()),
-    }
 }

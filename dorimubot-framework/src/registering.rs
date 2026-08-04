@@ -1,14 +1,11 @@
 use crate::app::QQBotApp;
-use crate::{EventHandler, Plugin, PluginRegistrar};
+use crate::{EventHandler, Plugin};
 use qqbot_rust_sdk::events::payload::event::EventKind;
 
 impl QQBotApp {
     /// 加载一个插件并让它注册所需的事件处理器。
     pub fn registe_plugin(&self, plugin: &dyn Plugin) {
-        plugin.register(&PluginRegistrar::new(
-            &self.event_handlers,
-            &self.depend_store,
-        ));
+        plugin.register(self);
     }
 
     /// 注册一个事件处理器。

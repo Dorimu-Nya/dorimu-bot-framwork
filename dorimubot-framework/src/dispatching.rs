@@ -55,7 +55,7 @@ impl QQBotApp {
         K: Into<EventKind>,
     {
         for handler in self.event_handlers.handlers_for(kind) {
-            handler(payload, &self.depend_store).await
+            handler(payload).await
         }
     }
 }

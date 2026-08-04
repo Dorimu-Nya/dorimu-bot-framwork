@@ -1,7 +1,6 @@
 use dorimubot_commands::{CommandHandler, CommandsStore, DynCommandHandleFn, ReplyingMessage};
 use dorimubot_framework::events::c2c::models::C2cMessage;
 use dorimubot_framework::events::common::User;
-use dorimubot_framework::DependStore;
 use std::collections::HashMap;
 
 fn command_message(content: &str) -> C2cMessage {
@@ -35,8 +34,7 @@ where
 }
 
 async fn assert_text_response(handler: DynCommandHandleFn, message: &C2cMessage, expected: &str) {
-    let dependencies = DependStore::new();
-    let response = match handler(message, &dependencies).await {
+    let response = match handler(message).await {
         Ok(response) => response,
         Err(error) => panic!("registered command handler failed: {error}"),
     };

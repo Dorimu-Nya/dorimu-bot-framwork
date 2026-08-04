@@ -1,7 +1,5 @@
 use super::replying::ReplyingMessage;
 use crate::common::{CommonMessage, FromCommonMessage};
-use dorimubot_framework::{Depend, DependArg, DependStore, DependencyProvider};
-use std::any::Any;
 use std::{fmt::Display, future::Future, pin::Pin, sync::Arc};
 
 // 错误的封装
@@ -14,69 +12,16 @@ pub type CommandHandleFuture<'a> =
 
 /// 命令处理函数类型。
 ///
-/// 接收消息和依赖容器，返回异步的命令处理结果
-pub type CommandHandleFn =
-    for<'a> fn(&'a dyn CommonMessage, &'a dyn DependencyProvider) -> CommandHandleFuture<'a>;
+/// 接收消息并返回异步的命令处理结果。
+pub type CommandHandleFn = for<'a> fn(&'a dyn CommonMessage) -> CommandHandleFuture<'a>;
 
 /// 动态命令处理函数类型（用于手动注册与统一存储）。
-pub type DynCommandHandleFn = Arc<
-    dyn for<'a> Fn(&'a dyn CommonMessage, &'a dyn DependencyProvider) -> CommandHandleFuture<'a>
-        + Send
-        + Sync,
->;
+pub type DynCommandHandleFn =
+    Arc<dyn for<'a> Fn(&'a dyn CommonMessage) -> CommandHandleFuture<'a> + Send + Sync>;
 
 /// 将函数指针类型的命令处理器包装为动态处理器。
 pub fn wrap_command_handle_fn(handler: CommandHandleFn) -> DynCommandHandleFn {
-    Arc::new(move |message, store| handler(message, store))
-}
-
-/// 手动注册命令时的参数提取 trait。
-///
-/// - 默认从 `FromCommonMessage` 提取。
-/// 参数来源标记用于区分消息载荷转换和依赖注入。
-pub trait FromCommandArg<Source>: Sized {
-    fn from_command_arg(message: &dyn CommonMessage, dependencies: &dyn DependencyProvider)
-        -> Self;
-}
-
-/// 标记从传入消息转换得到的参数。
-pub struct MessageCommandArg;
-
-impl<T> FromCommandArg<MessageCommandArg> for T
-where
-    for<'a> T: FromCommonMessage<'a>,
-{
-    fn from_command_arg(
-        message: &dyn CommonMessage,
-        _dependencies: &dyn DependencyProvider,
-    ) -> Self {
-        <Self as FromCommonMessage<'_>>::from(message)
-    }
-}
-
-impl<T> FromCommandArg<DependArg> for Depend<T>
-where
-    T: Any + Send + Sync,
-{
-    fn from_command_arg(
-        _message: &dyn CommonMessage,
-        dependencies: &dyn DependencyProvider,
-    ) -> Self {
-        Self::from_provider(dependencies)
-    }
-}
-
-impl FromCommandArg<DependArg> for DependStore {
-    fn from_command_arg(
-        _message: &dyn CommonMessage,
-        dependencies: &dyn DependencyProvider,
-    ) -> Self {
-        dependencies
-            .as_any()
-            .downcast_ref::<DependStore>()
-            .expect("command dependency provider must be DependStore")
-            .clone()
-    }
+    Arc::new(move |message| handler(message))
 }
 
 /// 同步命令函数的适配标记。
@@ -99,7 +44,7 @@ macro_rules! impl_command_handler {
             R: CommandOutput + Send + 'static,
         {
             fn into_dyn(self) -> DynCommandHandleFn {
-                Arc::new(move |_message, _store| {
+                Arc::new(move |_message| {
                     let result = (self)();
                     Box::pin(async move { CommandOutput::into_output(result) })
                 })
@@ -113,7 +58,7 @@ macro_rules! impl_command_handler {
             R: CommandOutput + Send + 'static,
         {
             fn into_dyn(self) -> DynCommandHandleFn {
-                Arc::new(move |_message, _store| {
+                Arc::new(move |_message| {
                     let fut = (self)();
                     Box::pin(async move {
                         let result = fut.await;
@@ -129,26 +74,26 @@ macro_rules! impl_command_handler {
             R: CommandOutput + Send + 'static,
         {
             fn into_dyn(self) -> DynCommandHandleFn {
-                Arc::new(move |message, _store| {
+                Arc::new(move |message| {
                     let result = (self)(message);
                     Box::pin(async move { CommandOutput::into_output(result) })
                 })
             }
         }
     };
-    ($( $ty:ident : $source:ident => $var:ident ),+ $(,)?) => {
-        impl<F, R, $($ty, $source),+> CommandHandler<($(($ty, $source),)+), SyncCommandHandlerKind> for F
+    ($( $ty:ident => $var:ident ),+ $(,)?) => {
+        impl<F, R, $($ty),+> CommandHandler<($($ty,)+), SyncCommandHandlerKind> for F
         where
             F: Fn($($ty),+) -> R + Send + Sync + 'static,
             R: CommandOutput + Send + 'static,
             $(
-                $ty: FromCommandArg<$source> + Send + 'static,
+                $ty: for<'a> FromCommonMessage<'a> + Send + 'static,
             )+
         {
             fn into_dyn(self) -> DynCommandHandleFn {
-                Arc::new(move |message, store| {
+                Arc::new(move |message| {
                     $(
-                        let $var = <$ty as FromCommandArg<$source>>::from_command_arg(message, store);
+                        let $var = <$ty as FromCommonMessage<'_>>::from(message);
                     )+
                     let result = (self)($($var),+);
                     Box::pin(async move { CommandOutput::into_output(result) })
@@ -156,19 +101,19 @@ macro_rules! impl_command_handler {
             }
         }
 
-        impl<F, Fut, R, $($ty, $source),+> CommandHandler<($(($ty, $source),)+), AsyncCommandHandlerKind> for F
+        impl<F, Fut, R, $($ty),+> CommandHandler<($($ty,)+), AsyncCommandHandlerKind> for F
         where
             F: Fn($($ty),+) -> Fut + Send + Sync + 'static,
             Fut: Future<Output = R> + Send + 'static,
             R: CommandOutput + Send + 'static,
             $(
-                $ty: FromCommandArg<$source> + Send + 'static,
+                $ty: for<'a> FromCommonMessage<'a> + Send + 'static,
             )+
         {
             fn into_dyn(self) -> DynCommandHandleFn {
-                Arc::new(move |message, store| {
+                Arc::new(move |message| {
                     $(
-                        let $var = <$ty as FromCommandArg<$source>>::from_command_arg(message, store);
+                        let $var = <$ty as FromCommonMessage<'_>>::from(message);
                     )+
                     let fut = (self)($($var),+);
                     Box::pin(async move {
@@ -182,14 +127,14 @@ macro_rules! impl_command_handler {
 }
 
 impl_command_handler!();
-impl_command_handler!(A1: S1 => a1);
-impl_command_handler!(A1: S1 => a1, A2: S2 => a2);
-impl_command_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3);
-impl_command_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4);
-impl_command_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5);
-impl_command_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5, A6: S6 => a6);
-impl_command_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5, A6: S6 => a6, A7: S7 => a7);
-impl_command_handler!(A1: S1 => a1, A2: S2 => a2, A3: S3 => a3, A4: S4 => a4, A5: S5 => a5, A6: S6 => a6, A7: S7 => a7, A8: S8 => a8);
+impl_command_handler!(A1 => a1);
+impl_command_handler!(A1 => a1, A2 => a2);
+impl_command_handler!(A1 => a1, A2 => a2, A3 => a3);
+impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4);
+impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5);
+impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6);
+impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6, A7 => a7);
+impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6, A7 => a7, A8 => a8);
 
 /// command 函数的返回值的统一转换trait
 pub trait CommandOutput {

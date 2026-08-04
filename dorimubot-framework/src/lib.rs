@@ -2,23 +2,18 @@
 
 extern crate self as dorimubot_framework;
 
-#[cfg(feature = "runtime")]
-mod depend;
-#[cfg(feature = "runtime")]
-mod dependency;
-#[cfg(feature = "runtime")]
-mod event_handler;
-#[cfg(feature = "runtime")]
-mod event_registry;
-#[cfg(feature = "runtime")]
-mod plugin;
-
 #[cfg(feature = "app")]
 mod app;
 #[cfg(feature = "app")]
 mod config;
 #[cfg(feature = "app")]
 mod dispatching;
+#[cfg(feature = "runtime")]
+mod event_handler;
+#[cfg(feature = "runtime")]
+mod event_registry;
+#[cfg(feature = "app")]
+mod plugin;
 #[cfg(feature = "app")]
 mod registering;
 
@@ -57,21 +52,16 @@ pub use serde;
 #[doc(hidden)]
 pub use tracing;
 
-#[cfg(feature = "runtime")]
-pub use depend::{Depend, DependArg, DependStore};
-#[cfg(feature = "runtime")]
-pub use dependency::{resolve_dependency, DependencyProvider};
-#[cfg(feature = "runtime")]
-pub use event_handler::{
-    AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, DynEventHandler, EventHandler,
-    EventHandlerFuture, FromEventArg, PayloadEventArg, SyncEventHandlerKind,
-};
-#[cfg(feature = "runtime")]
-pub use event_registry::EventHandlerRegistry;
-#[cfg(feature = "runtime")]
-pub use plugin::{Plugin, PluginRegistrar};
-
 #[cfg(feature = "app")]
 pub use app::{QQApiCLient, QQBotApp};
 #[cfg(feature = "app")]
 pub use config::{AppConfig, CredentialConfig, ListeningConfig, QQApiOverrides, SandboxConfig};
+#[cfg(feature = "runtime")]
+pub use event_handler::{
+    AsyncEventHandlerKind, BorrowedEventSyncHandlerKind, DynEventHandler, EventHandler,
+    EventHandlerFuture, SyncEventHandlerKind,
+};
+#[cfg(feature = "runtime")]
+pub use event_registry::EventHandlerRegistry;
+#[cfg(feature = "app")]
+pub use plugin::Plugin;

@@ -1,4 +1,4 @@
-use crate::{DependStore, EventHandlerRegistry};
+use crate::EventHandlerRegistry;
 use qqbot_rust_sdk::openapi::{
     HttpTokenProvider, OpenApi, OpenApiClient, OpenApiConfig, OpenApiPaths, TokenManager,
 };
@@ -15,14 +15,12 @@ pub struct QQBotApp {
     pub(crate) credential: CredentialConfig,
     /// 生产环境的 api 客户端
     prod_api_client: Arc<QQApiCLient>,
-    /// 依赖容器
-    pub depend_store: DependStore,
     /// 当前应用实例注册的事件处理器。
     pub(crate) event_handlers: EventHandlerRegistry,
 }
 
 impl QQBotApp {
-    /// 根据应用配置初始化 API、依赖容器、命令插件和事件处理器。
+    /// 根据应用配置初始化 API、插件和事件处理器。
     pub fn new(config: AppConfig) -> Self {
         // api 客户端初始化
         let token_provider = HttpTokenProvider::from_env_or_official(
@@ -38,30 +36,9 @@ impl QQBotApp {
         let api = Arc::new(OpenApi::new(client, OpenApiPaths::official_defaults()));
         // api 客户端初始化 end
 
-        // 初始化ioc
-        let depend_store = DependStore::new();
-        if !config.ignore_checking {
-            if let Some(depend) = depend_store.insert_arc(Arc::clone(&api)) {
-                panic!("Depend {:?} duplicated", depend);
-            }
-        } else {
-            depend_store.insert_arc(Arc::clone(&api));
-        }
-
-        for register in &config.depends {
-            if !config.ignore_checking {
-                if let Some(depend) = register(&depend_store) {
-                    panic!("Depend {:?} duplicated", depend);
-                }
-            } else {
-                register(&depend_store);
-            }
-        }
-
         let app = Self {
             credential: config.credential.clone(),
             prod_api_client: api,
-            depend_store,
             event_handlers: EventHandlerRegistry::new(),
         };
 

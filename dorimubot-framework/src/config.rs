@@ -1,6 +1,5 @@
-use crate::{Depend, DependStore, Plugin};
+use crate::Plugin;
 use serde::Deserialize;
-use std::any::Any;
 
 /// 监听配置
 #[derive(Clone, Deserialize)]
@@ -79,11 +78,6 @@ pub struct AppConfig {
     pub sandbox_config: SandboxConfig,
     /// api地址覆写
     pub api_overrides: QQApiOverrides,
-    /// 是否忽略启动时的重复依赖检查。
-    pub ignore_checking: bool,
-    /// 上下文存储
-    #[serde(skip)]
-    pub depends: Vec<Box<dyn Fn(&DependStore) -> Option<&'static str> + Send + Sync>>,
     /// 应用启动时注册的原生插件。
     #[serde(skip)]
     pub plugins: Vec<Box<dyn Plugin>>,
@@ -96,8 +90,6 @@ impl Default for AppConfig {
             credential: Default::default(),
             sandbox_config: Default::default(),
             api_overrides: Default::default(),
-            ignore_checking: false,
-            depends: vec![],
             plugins: vec![],
         }
     }
@@ -126,13 +118,6 @@ impl AppConfig {
 
     pub fn prod_url_override(mut self, api: &str) -> Self {
         self.api_overrides.prod_url_override = Some(api.to_string());
-        self
-    }
-
-    pub fn with_depend<T: Any + Send + Sync + 'static>(mut self, depend: Depend<T>) -> Self {
-        self.depends.push(Box::new(move |store: &DependStore| {
-            store.insert_arc(depend.as_arc())
-        }));
         self
     }
 

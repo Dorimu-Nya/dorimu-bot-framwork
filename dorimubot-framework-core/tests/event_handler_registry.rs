@@ -1,6 +1,8 @@
 use dorimubot_framework_core::{QQBot, QQBotConfig};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+use qqbot_rust_sdk::events::group::event::GroupEventKind;
+use qqbot_rust_sdk::events::group::models::GroupMessage;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -8,6 +10,63 @@ use std::sync::Arc;
 struct HandlerState {
     called: AtomicUsize,
 }
+
+static GROUP_HANDLER_CALLS: AtomicUsize = AtomicUsize::new(0);
+
+fn group_message_handler(_message: GroupMessage) {
+    GROUP_HANDLER_CALLS.fetch_add(1, Ordering::SeqCst);
+}
+
+fn group_app(register_handler: bool) -> QQBot {
+    let app = QQBot::new(QQBotConfig::new());
+    if register_handler {
+        app.register_event_handler(GroupEventKind::GroupAtMessageCreate, group_message_handler);
+    }
+    app
+}
+
+fn group_payload() -> DispatchPayload {
+    serde_json::from_value(serde_json::json!({
+        "id": "event-id", "op": 0, "s": 1, "t": "GROUP_AT_MESSAGE_CREATE",
+        "d": {
+            "id": "message-id",
+            "author": {
+                "username": "",
+                "bot": false,
+                "union_user_account": "",
+                "user_openid": "",
+                "member_open_id": "member-id",
+                "membership_role": "member"
+            },
+            "content": "event-registry",
+            "group_openid": "group-id",
+            "message_type": 0,
+            "message_scene": { "ext": [] },
+            "attachments": [],
+            "mentions": [],
+            "ark_data": { "prompt": "", "ark_type": "", "ark_name": "", "fields": {} },
+            "msg_elements": { "attachments": [], "msg_elements": [] }
+        }
+    }))
+    .unwrap()
+}
+
+#[tokio::test]
+async fn named_group_message_handler_is_scoped_to_the_registered_app() {
+    let registered_app = group_app(true);
+    let unregistered_app = group_app(false);
+
+    GROUP_HANDLER_CALLS.store(0, Ordering::SeqCst);
+    unregistered_app
+        .webhook_handler(WebhookPayload::Dispatch(group_payload()))
+        .await;
+    registered_app
+        .webhook_handler(WebhookPayload::Dispatch(group_payload()))
+        .await;
+
+    assert_eq!(GROUP_HANDLER_CALLS.load(Ordering::SeqCst), 1);
+}
+
 fn app(register_handler: bool) -> (QQBot, Arc<HandlerState>) {
     let state = Arc::new(HandlerState {
         called: AtomicUsize::new(0),

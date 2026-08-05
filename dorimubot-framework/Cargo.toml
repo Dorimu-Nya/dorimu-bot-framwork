@@ -4,7 +4,7 @@ version = "0.0.1"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "All-in-one facade for DorimuBot Framework"
+description = "基于 qqbot-rust-sdk 开发的QQ机器人开发框架"
 
 [features]
 default = ["axum-webhook", "commands", "commands-macros"]

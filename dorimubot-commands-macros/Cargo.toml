@@ -4,7 +4,7 @@ version = "0.0.1"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-
+description = "dorimubot机器人开发框架的指令注册插件过程宏"
 [lib]
 proc-macro = true
 

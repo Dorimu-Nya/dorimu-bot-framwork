@@ -275,7 +275,7 @@ dependencies = [
 
 [[package]]
 name = "dorimubot-axum"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "axum",
  "dorimubot-framework-core",
@@ -286,7 +286,7 @@ dependencies = [
 
 [[package]]
 name = "dorimubot-commands"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "dorimubot-commands-macros",
  "dorimubot-framework-core",
@@ -299,7 +299,7 @@ dependencies = [
 
 [[package]]
 name = "dorimubot-commands-macros"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "dorimubot-framework"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "dorimubot-axum",
  "dorimubot-commands",
@@ -321,7 +321,7 @@ dependencies = [
 
 [[package]]
 name = "dorimubot-framework-core"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "qqbot-rust-sdk",
  "serde",

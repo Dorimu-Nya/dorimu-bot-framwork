@@ -1,10 +1,11 @@
 [package]
 name = "dorimubot-framework"
-version = "0.0.1"
+version = "0.0.2"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "基于 qqbot-rust-sdk 开发的QQ机器人开发框架"
+exclude = ["tests/facade-only/**"]
 
 [features]
 default = ["axum-webhook", "commands", "commands-macros"]
@@ -13,10 +14,10 @@ commands = ["dep:dorimubot-commands"]
 commands-macros = ["dep:dorimubot-commands-macros"]
 
 [dependencies]
-dorimubot-framework-core = { version = "0.0.1" }
-dorimubot-axum = { version = "0.0.1", optional = true }
-dorimubot-commands = { version = "0.0.1", optional = true }
-dorimubot-commands-macros = { version = "0.0.1", optional = true }
+dorimubot-framework-core = { version = "0.0.2" }
+dorimubot-axum = { version = "0.0.2", optional = true }
+dorimubot-commands = { version = "0.0.2", optional = true }
+dorimubot-commands-macros = { version = "0.0.2", optional = true }
 
 [dev-dependencies]
 qqbot-rust-sdk = { workspace = true, features = ["openapi"] }

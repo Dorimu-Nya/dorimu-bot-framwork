@@ -1,6 +1,6 @@
 [package]
 name = "dorimubot-framework"
-version = "0.0.2"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -14,10 +14,10 @@ commands = ["dep:dorimubot-commands"]
 commands-macros = ["dep:dorimubot-commands-macros"]
 
 [dependencies]
-dorimubot-framework-core = { version = "0.0.2" }
-dorimubot-axum = { version = "0.0.2", optional = true }
-dorimubot-commands = { version = "0.0.2", optional = true }
-dorimubot-commands-macros = { version = "0.0.2", optional = true }
+dorimubot-framework-core.workspace = true
+dorimubot-axum = { workspace = true, optional = true }
+dorimubot-commands = { workspace = true, optional = true }
+dorimubot-commands-macros = { workspace = true, optional = true }
 
 [dev-dependencies]
 qqbot-rust-sdk = { workspace = true, features = ["openapi"] }

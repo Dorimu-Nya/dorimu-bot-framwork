@@ -1,14 +1,14 @@
 [package]
 name = "dorimubot-commands"
-version = "0.0.2"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "dorimubot机器人开发框架的指令注册插件"
 
 [dependencies]
-dorimubot-framework-core = { version = "0.0.2"}
-dorimubot-commands-macros = { version = "0.0.2"}
+dorimubot-framework-core.workspace = true
+dorimubot-commands-macros.workspace = true
 inventory.workspace = true
 qqbot-rust-sdk = { workspace = true, features = ["events", "openapi"] }
 serde.workspace = true

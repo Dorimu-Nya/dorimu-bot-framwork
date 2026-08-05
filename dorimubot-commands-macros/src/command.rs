@@ -110,7 +110,7 @@ fn commands_crate_path() -> TokenStream {
             Ok(FoundCrate::Itself) => quote!(crate::commands),
             Ok(FoundCrate::Name(name)) => {
                 let name = format_ident!("{}", name);
-                quote!(::#name::commands)
+                quote!(::#name::dorimubot_commands)
             }
             Err(error) => panic!(
                 "#[command] requires either dorimubot-commands or dorimubot-framework: {error}"

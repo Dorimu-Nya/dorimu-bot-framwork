@@ -1,0 +1,9 @@
+[package]
+name = "dorimubot-framework-facade-only-test"
+version = "0.0.0"
+edition.workspace = true
+publish = false
+
+[dependencies]
+dorimubot-framework = { path = "../..", default-features = false, features = ["commands"] }
+

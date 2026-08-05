@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "dorimubot-framework",
+    "dorimubot-framework/tests/facade-only",
     "dorimubot-framework-core",
     "dorimubot-axum",
     "dorimubot-commands",

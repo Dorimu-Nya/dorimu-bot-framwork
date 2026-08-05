@@ -331,6 +331,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "dorimubot-framework-facade-only-test"
+version = "0.0.0"
+dependencies = [
+ "dorimubot-framework",
+]
+
+[[package]]
 name = "ed25519"
 version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

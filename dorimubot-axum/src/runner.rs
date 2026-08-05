@@ -1,7 +1,7 @@
 use axum::routing::any;
 use axum::{Json, Router};
 use dorimubot_framework_core::QQBot;
-use qqbot_rust_sdk::events::payload::payload::WebhookPayload;
+use dorimubot_framework_core::qqbot_rust_sdk::events::payload::payload::WebhookPayload;
 use std::sync::Arc;
 use tracing::info;
 

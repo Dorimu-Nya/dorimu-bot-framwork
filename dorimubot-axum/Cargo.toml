@@ -1,14 +1,14 @@
 [package]
 name = "dorimubot-axum"
-version.workspace = true
+version = "0.0.1"
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "Axum integration for DorimuBot Framework"
 
 [dependencies]
 axum = { version = "0.8", features = ["macros"] }
-dorimubot-framework-core = { path = "../dorimubot-framework-core" }
-qqbot-rust-sdk = { workspace = true, features = ["events"] }
+dorimubot-framework-core = { version = "0.0.1"}
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

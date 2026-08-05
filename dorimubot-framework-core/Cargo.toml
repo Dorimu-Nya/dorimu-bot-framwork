@@ -1,8 +1,9 @@
 [package]
 name = "dorimubot-framework-core"
-version.workspace = true
+version = "0.0.1"
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "基于 qqbot-rust-sdk 开发的QQ机器人开发框架"
 
 [dependencies]

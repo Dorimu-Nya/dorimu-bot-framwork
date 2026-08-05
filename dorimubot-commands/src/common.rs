@@ -14,7 +14,7 @@ pub trait CommonMessage: Sync {
     fn get_content(&self) -> &Option<String>;
     fn get_author_openid(&self) -> &String;
     fn get_timestamp(&self) -> &Option<String>;
-    fn get_attachments(&self) -> &Vec<MessageAttachment>;
+    fn get_attachments(&self) -> &Option<Vec<MessageAttachment>>;
     fn get_message_from_type(&self) -> MessageFrom;
     /// 返回当前场景的 openid：私聊为用户 id，群聊为群 id。
     fn get_scene_openid(&self) -> &String;
@@ -37,7 +37,7 @@ impl CommonMessage for C2cMessage {
         &self.timestamp
     }
 
-    fn get_attachments(&self) -> &Vec<MessageAttachment> {
+    fn get_attachments(&self) -> &Option<Vec<MessageAttachment>> {
         &self.attachments
     }
 
@@ -60,14 +60,14 @@ impl CommonMessage for GroupMessage {
     }
 
     fn get_author_openid(&self) -> &String {
-        &self.author.member_open_id
+        &self.author.member_openid
     }
 
     fn get_timestamp(&self) -> &Option<String> {
         &self.timestamp
     }
 
-    fn get_attachments(&self) -> &Vec<MessageAttachment> {
+    fn get_attachments(&self) -> &Option<Vec<MessageAttachment>> {
         &self.attachments
     }
 
@@ -91,13 +91,13 @@ impl<'a> FromCommonMessage<'a> for &'a dyn CommonMessage {
     }
 }
 
-impl<'a> FromCommonMessage<'a> for &'a Vec<MessageAttachment> {
+impl<'a> FromCommonMessage<'a> for &'a Option<Vec<MessageAttachment>> {
     fn from(req: &'a dyn CommonMessage) -> Self {
         req.get_attachments()
     }
 }
 
-impl FromCommonMessage<'_> for Vec<MessageAttachment> {
+impl FromCommonMessage<'_> for Option<Vec<MessageAttachment>> {
     fn from(req: &dyn CommonMessage) -> Self {
         req.get_attachments().clone()
     }

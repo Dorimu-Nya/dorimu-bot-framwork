@@ -1,28 +1,28 @@
 use dorimubot_commands::{CommandHandler, CommandsStore, DynCommandHandleFn, ReplyingMessage};
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
-use qqbot_rust_sdk::events::common::User;
+use qqbot_rust_sdk::events::common::{C2cUser, User};
 use std::collections::HashMap;
 
 fn command_message(content: &str) -> C2cMessage {
     C2cMessage {
         id: "message-id".to_string(),
-        author: User {
-            id: None,
-            username: "test-user".to_string(),
-            bot: false,
-            union_openid: None,
-            union_user_account: String::new(),
+        author: C2cUser {
+            user: User {
+                id: None,
+                username: "test-user".to_string(),
+                bot: false,
+                union_openid: None,
+                union_user_account: None,
+            },
             user_openid: "user-id".to_string(),
-            member_open_id: String::new(),
-            membership_role: String::new(),
         },
         content: Some(content.to_string()),
         timestamp: None,
         message_type: None,
         message_scene: None,
-        attachments: Vec::new(),
+        attachments: None,
         ark_data: None,
-        msg_elements: Vec::new(),
+        msg_elements: None,
     }
 }
 

@@ -1,9 +1,10 @@
+use axum::http::StatusCode;
 use axum::routing::any;
 use axum::{Json, Router};
-use dorimubot_framework_core::QQBot;
 use dorimubot_framework_core::qqbot_rust_sdk::events::payload::payload::WebhookPayload;
+use dorimubot_framework_core::QQBot;
 use std::sync::Arc;
-use tracing::info;
+use tracing::{error, info};
 
 /// 启动基于Axum的 QQ Bot 程序
 ///
@@ -25,10 +26,7 @@ use tracing::info;
 ///     run_axum(QQBot::new(config)).await
 /// }
 /// ```
-pub async fn run_axum_with_router(
-    app: QQBot,
-    base_router: Option<Router>,
-) -> std::io::Result<()> {
+pub async fn run_axum_with_router(app: QQBot, base_router: Option<Router>) -> std::io::Result<()> {
     tracing_subscriber::fmt::init();
 
     let webhook_path = app.listening_config().webhook_path.clone();
@@ -40,8 +38,21 @@ pub async fn run_axum_with_router(
         &webhook_path,
         any({
             let app = Arc::clone(&app);
-            async move |Json(payload): Json<WebhookPayload>| {
-                Json(app.webhook_handler(payload).await)
+            async move |body: String| {
+                // 不确定是否可能字段可能空的情况导致的序列化失败又log不出来，所以暂时先这么设计
+                let payload = match Json::<WebhookPayload>::from_bytes(body.as_bytes()) {
+                    Ok(Json(payload)) => payload,
+                    Err(err) => {
+                        error!(
+                            error = %err,
+                            raw = %body,
+                            "Webhook JSON 解析失败"
+                        );
+                        return Err(StatusCode::INTERNAL_SERVER_ERROR);
+                    }
+                };
+
+                Ok(Json(app.webhook_handler(payload).await))
             }
         }),
     );

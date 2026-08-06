@@ -34,9 +34,8 @@ fn group_payload() -> DispatchPayload {
                 "username": "",
                 "bot": false,
                 "union_user_account": "",
-                "user_openid": "",
-                "member_open_id": "member-id",
-                "membership_role": "member"
+                "member_openid": "member-id",
+                "member_role": "member"
             },
             "content": "event-registry",
             "group_openid": "group-id",
@@ -45,7 +44,7 @@ fn group_payload() -> DispatchPayload {
             "attachments": [],
             "mentions": [],
             "ark_data": { "prompt": "", "ark_type": "", "ark_name": "", "fields": {} },
-            "msg_elements": { "attachments": [], "msg_elements": [] }
+            "msg_elements": []
         }
     }))
     .unwrap()

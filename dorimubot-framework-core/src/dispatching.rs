@@ -12,11 +12,12 @@ impl QQBot {
             WebhookPayload::Dispatch(payload) => {
                 self.dispatch_event(payload).await;
                 None
-            }
-            WebhookPayload::HttpCallbackAck(_) => None,
+            },
             WebhookPayload::WebhookAddressVerify(payload) => {
                 Some(self.handle_address_verify(payload.d).unwrap())
-            }
+            },
+
+            _ => None
         }
     }
 

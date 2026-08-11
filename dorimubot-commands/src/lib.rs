@@ -2,12 +2,16 @@ pub use dorimubot_commands_macros::command;
 #[doc(hidden)]
 pub use inventory;
 
+mod command;
 mod command_plugin;
 pub mod common;
 pub mod defining;
 pub mod replying;
 pub mod store;
 
+pub use command::{AsyncCommand, Command};
+#[doc(hidden)]
+pub use command::{AsyncStructCommandHandlerKind, CommandArgs, StructCommandHandlerKind};
 pub use command_plugin::CommandPlugin;
 pub use common::{CommonMessage, FromCommonMessage, MessageFrom};
 pub use defining::{

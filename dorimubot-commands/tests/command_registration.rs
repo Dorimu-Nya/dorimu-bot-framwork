@@ -1,5 +1,6 @@
 use dorimubot_commands::{
-    CommandHandler, CommandPlugin, CommandsStore, DynCommandHandleFn, ReplyingMessage,
+    AsyncCommand, Command, CommandHandler, CommandPlugin, CommandsStore, DynCommandHandleFn,
+    ReplyingMessage,
 };
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::common::{C2cUser, User};
@@ -62,6 +63,40 @@ impl MutableCommand {
     }
 }
 
+struct StructCommand {
+    calls: usize,
+}
+
+impl Command for StructCommand {
+    type Args = (String, Option<Vec<String>>);
+    type Output = ReplyingMessage;
+
+    fn handle(&mut self, (content, words): Self::Args) -> Self::Output {
+        self.calls += 1;
+        ReplyingMessage::Text(format!(
+            "{} | {} words | called {} times",
+            content,
+            words.map_or(0, |words| words.len()),
+            self.calls
+        ))
+    }
+}
+
+struct AsyncStructCommand {
+    calls: usize,
+}
+
+impl AsyncCommand for AsyncStructCommand {
+    type Args = (String,);
+    type Output = ReplyingMessage;
+
+    async fn handle(&mut self, (content,): Self::Args) -> Self::Output {
+        tokio::task::yield_now().await;
+        self.calls += 1;
+        ReplyingMessage::Text(format!("{content} | async call {}", self.calls))
+    }
+}
+
 #[tokio::test]
 async fn function_handler_is_registered_and_runs() {
     let mut commands = HashMap::new();
@@ -119,4 +154,39 @@ fn with_command_accepts_a_mutable_method_handler() {
     let mut command = MutableCommand { calls: 0 };
 
     let _plugin = CommandPlugin::new().with_command("/mutable-method", move || command.handle());
+}
+
+#[tokio::test]
+async fn command_struct_is_registered_with_multiple_arguments() {
+    let handler = into_command_handler(StructCommand { calls: 0 });
+    let message = command_message("/struct-command hello");
+
+    assert_text_response(
+        handler.clone(),
+        &message,
+        "/struct-command hello | 2 words | called 1 times",
+    )
+    .await;
+    assert_text_response(
+        handler,
+        &message,
+        "/struct-command hello | 2 words | called 2 times",
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn async_command_struct_can_mutate_itself_across_awaits() {
+    let handler = into_command_handler(AsyncStructCommand { calls: 0 });
+    let message = command_message("/async-struct");
+
+    assert_text_response(handler.clone(), &message, "/async-struct | async call 1").await;
+    assert_text_response(handler, &message, "/async-struct | async call 2").await;
+}
+
+#[test]
+fn with_command_accepts_command_structs() {
+    let _plugin = CommandPlugin::new()
+        .with_command("/struct-command", StructCommand { calls: 0 })
+        .with_command("/async-struct", AsyncStructCommand { calls: 0 });
 }

@@ -39,7 +39,8 @@ impl CommandPlugin {
 
     /// 手动注册一个命令处理器。
     ///
-    /// 处理器可以是 `Fn` 或 `FnMut`，因此闭包中可以调用捕获对象的 `&mut self` 方法。
+    /// 处理器可以是 `Fn`、`FnMut`，也可以是实现了 [`crate::Command`] 或
+    /// [`crate::AsyncCommand`] 的结构体。
     pub fn with_command<H, Args, Kind>(mut self, prefix: &'static str, handler: H) -> Self
     where
         H: CommandHandler<Args, Kind>,

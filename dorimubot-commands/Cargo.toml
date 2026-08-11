@@ -12,7 +12,5 @@ dorimubot-commands-macros.workspace = true
 inventory.workspace = true
 qqbot-rust-sdk = { workspace = true, features = ["events", "openapi"] }
 serde.workspace = true
-tracing.workspace = true
-
-[dev-dependencies]
 tokio.workspace = true
+tracing.workspace = true

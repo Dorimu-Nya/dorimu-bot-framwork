@@ -1,4 +1,6 @@
-use dorimubot_framework_core::{QQBot, QQBotConfig};
+mod common;
+
+use dorimubot_framework_core::QQBot;
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::group::event::GroupEventKind;
@@ -17,8 +19,8 @@ fn group_message_handler(_message: GroupMessage) {
     GROUP_HANDLER_CALLS.fetch_add(1, Ordering::SeqCst);
 }
 
-fn group_app(register_handler: bool) -> QQBot {
-    let app = QQBot::new(QQBotConfig::new());
+async fn group_app(register_handler: bool) -> QQBot {
+    let app = QQBot::new(common::qqbot_config()).await;
     if register_handler {
         app.register_event_handler(GroupEventKind::GroupAtMessageCreate, group_message_handler);
     }
@@ -52,8 +54,8 @@ fn group_payload() -> DispatchPayload {
 
 #[tokio::test]
 async fn named_group_message_handler_is_scoped_to_the_registered_app() {
-    let registered_app = group_app(true);
-    let unregistered_app = group_app(false);
+    let registered_app = group_app(true).await;
+    let unregistered_app = group_app(false).await;
 
     GROUP_HANDLER_CALLS.store(0, Ordering::SeqCst);
     unregistered_app
@@ -66,11 +68,11 @@ async fn named_group_message_handler_is_scoped_to_the_registered_app() {
     assert_eq!(GROUP_HANDLER_CALLS.load(Ordering::SeqCst), 1);
 }
 
-fn app(register_handler: bool) -> (QQBot, Arc<HandlerState>) {
+async fn app(register_handler: bool) -> (QQBot, Arc<HandlerState>) {
     let state = Arc::new(HandlerState {
         called: AtomicUsize::new(0),
     });
-    let app = QQBot::new(QQBotConfig::new());
+    let app = QQBot::new(common::qqbot_config()).await;
     if register_handler {
         let handler_state = Arc::clone(&state);
         app.register_event_handler(
@@ -109,8 +111,8 @@ fn c2c_payload() -> DispatchPayload {
 
 #[tokio::test]
 async fn event_handlers_are_scoped_to_the_registered_app() {
-    let (registered_app, registered_state) = app(true);
-    let (unregistered_app, unregistered_state) = app(false);
+    let (registered_app, registered_state) = app(true).await;
+    let (unregistered_app, unregistered_state) = app(false).await;
 
     unregistered_app
         .webhook_handler(WebhookPayload::Dispatch(c2c_payload()))

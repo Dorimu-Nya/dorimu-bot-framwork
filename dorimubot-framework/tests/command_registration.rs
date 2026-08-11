@@ -1,6 +1,8 @@
+mod common;
+
 use dorimubot_commands::{CommandDef, CommandPlugin, ReplyingMessage};
 use dorimubot_commands_macros::command;
-use dorimubot_framework_core::{QQBot, QQBotConfig};
+use dorimubot_framework_core::QQBot;
 
 #[command("/macro-registration")]
 fn macro_registered_command() {}
@@ -12,9 +14,9 @@ fn command_macro_registers_command_definition() {
         .any(|command| command.prefix == "/macro-registration"));
 }
 
-#[test]
-fn command_without_macro_can_be_registered() {
-    let app = QQBot::new(QQBotConfig::new());
+#[tokio::test]
+async fn command_without_macro_can_be_registered() {
+    let app = QQBot::new(common::qqbot_config()).await;
     let command_plugin = CommandPlugin::new().with_command("/manual-registration", || {
         ReplyingMessage::Text("registered manually".to_string())
     });

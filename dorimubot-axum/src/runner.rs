@@ -23,7 +23,7 @@ use tracing::{error, info};
 ///         },
 ///         ..Default::default()
 ///     };
-///     run_axum(QQBot::new(config)).await
+///     run_axum(QQBot::new(config).await).await
 /// }
 /// ```
 pub async fn run_axum_with_router(app: QQBot, base_router: Option<Router>) -> std::io::Result<()> {

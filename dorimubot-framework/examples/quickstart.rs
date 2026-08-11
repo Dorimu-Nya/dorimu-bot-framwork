@@ -69,7 +69,7 @@ async fn main() -> std::io::Result<()> {
         .webhook_path("/webhook")
         .api_override("https://sandbox.api.sgroup.qq.com");
 
-    let app = QQBot::new(config);
+    let app = QQBot::new(config).await;
     command_plugin.register(&app);
     run_dorimubot(app).await
 }

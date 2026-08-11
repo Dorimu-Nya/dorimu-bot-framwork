@@ -1,4 +1,6 @@
-use dorimubot_framework_core::{QQBot, QQBotConfig};
+mod common;
+
+use dorimubot_framework_core::QQBot;
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
@@ -8,7 +10,11 @@ static HANDLER_CALLS: AtomicUsize = AtomicUsize::new(0);
 
 #[tokio::test]
 async fn registers_event_handlers_with_supported_signatures() {
-    let app = QQBot::new(QQBotConfig::default());
+    let app = QQBot::new(common::qqbot_config()).await;
+
+    let bot_info = app.bot_info().unwrap();
+    assert_eq!(bot_info.id, "test-bot-id");
+    assert_eq!(bot_info.username, "test-bot");
 
     app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_without_arguments);
     app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_with_payload);
@@ -19,6 +25,13 @@ async fn registers_event_handlers_with_supported_signatures() {
         .await;
 
     assert_eq!(HANDLER_CALLS.load(Ordering::SeqCst), 3);
+}
+
+#[tokio::test]
+async fn bot_info_failure_does_not_prevent_initialization() {
+    let app = QQBot::new(common::qqbot_config_without_bot_info()).await;
+
+    assert!(app.bot_info().is_none());
 }
 
 fn c2c_payload() -> DispatchPayload {

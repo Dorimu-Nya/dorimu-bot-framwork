@@ -5,8 +5,10 @@ use crate::{
 use dorimubot_framework_core::{QQApiCLient, QQBot};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
-use qqbot_rust_sdk::events::group::event::GroupEventKind;
+use qqbot_rust_sdk::events::group::event::{GroupEvent, GroupEventKind};
 use qqbot_rust_sdk::events::group::models::GroupMessage;
+use qqbot_rust_sdk::events::payload::event::Event;
+use qqbot_rust_sdk::events::payload::payload::DispatchPayload;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::{error, info, warn};
@@ -81,11 +83,36 @@ impl CommandPlugin {
         });
 
         let api = app.get_api_client();
+        let group_message_commands = commands.clone();
         app.register_event_handler(GroupEventKind::GroupAtMessageCreate, move |message| {
             let api = Arc::clone(&api);
-            let commands = commands.clone();
+            let commands = group_message_commands.clone();
             async move { Self::handle_group(message, api, commands).await }
         });
+
+        let api = app.get_api_client();
+        let bot_mention = app
+            .bot_info()
+            .and_then(|bot_info| bot_info.union_openid.as_deref())
+            .filter(|union_openid| !union_openid.is_empty())
+            .map(|union_openid| format!("@<{union_openid}>"));
+        // SDK 的 GroupMessage 提取器目前只覆盖 GroupAtMessageCreate，
+        // 全量群消息需要从完整载荷中显式取出。
+        app.register_event_handler(
+            GroupEventKind::GroupMessageCreate,
+            move |payload: DispatchPayload| {
+                let api = Arc::clone(&api);
+                let commands = commands.clone();
+                let bot_mention = bot_mention.clone();
+                async move {
+                    let Event::GroupEvent(GroupEvent::GroupMessageCreate(message)) = payload.event
+                    else {
+                        return;
+                    };
+                    Self::handle_group_message_create(message, bot_mention, api, commands).await
+                }
+            },
+        );
     }
 
     async fn handle_c2c(message: C2cMessage, api: Arc<QQApiCLient>, commands: CommandsStore) {
@@ -108,6 +135,26 @@ impl CommandPlugin {
                 .await;
             info!("send group message result: {:?}", result);
         }
+    }
+
+    async fn handle_group_message_create(
+        mut message: GroupMessage,
+        bot_mention: Option<String>,
+        api: Arc<QQApiCLient>,
+        commands: CommandsStore,
+    ) {
+        let Some(bot_mention) = bot_mention else {
+            return;
+        };
+        let Some(content) = message.content.as_deref() else {
+            return;
+        };
+        let Some(content) = content.strip_prefix(&bot_mention) else {
+            return;
+        };
+
+        message.content = Some(content.trim().to_string());
+        Self::handle_group(message, api, commands).await;
     }
 
     async fn handle_message(

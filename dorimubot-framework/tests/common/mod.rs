@@ -73,7 +73,7 @@ fn handle_request(mut stream: TcpStream) {
         ),
         "/users/@me" => (
             "200 OK",
-            r#"{"id":"test-bot-id","username":"test-bot","bot":true}"#,
+            r#"{"id":"test-bot-id","username":"test-bot","bot":true,"union_openid":"test-bot-union-openid"}"#,
         ),
         _ => ("404 Not Found", r#"{"message":"not found"}"#),
     };

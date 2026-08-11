@@ -18,9 +18,9 @@ edition = "2021"
 [workspace.dependencies]
 base64 = "0.22"
 dorimubot-axum = { version = "0.0.3", path = "dorimubot-axum" }
-dorimubot-commands = { version = "0.0.3", path = "dorimubot-commands" }
-dorimubot-commands-macros = { version = "0.0.3", path = "dorimubot-commands-macros" }
-dorimubot-framework-core = { version = "0.0.3", path = "dorimubot-framework-core" }
+dorimubot-commands = { version = "0.0.4", path = "dorimubot-commands" }
+dorimubot-commands-macros = { version = "0.0.4", path = "dorimubot-commands-macros" }
+dorimubot-framework-core = { version = "0.0.4", path = "dorimubot-framework-core" }
 inventory = "0.3.24"
 qqbot-rust-sdk = { version = "0.0.3" }
 serde = { version = "1", features = ["derive"] }

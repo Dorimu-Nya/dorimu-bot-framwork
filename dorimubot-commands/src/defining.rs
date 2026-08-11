@@ -1,6 +1,11 @@
 use super::replying::ReplyingMessage;
 use crate::common::{CommonMessage, FromCommonMessage};
-use std::{fmt::Display, future::Future, pin::Pin, sync::Arc};
+use std::{
+    fmt::Display,
+    future::Future,
+    pin::Pin,
+    sync::{Arc, Mutex, MutexGuard},
+};
 
 // 错误的封装
 // sheip9 (2026/4/9): 不知道标准库里有没有啥东西可以替换他
@@ -31,21 +36,30 @@ pub struct AsyncCommandHandlerKind;
 /// 借用消息参数的同步命令函数适配标记。
 pub struct BorrowedMessageSyncCommandHandlerKind;
 
-/// 将普通函数适配为统一命令处理函数的 trait。
-pub trait CommandHandler<Args, Kind>: Send + Sync + 'static {
+/// 将普通函数或可变闭包适配为统一命令处理函数的 trait。
+///
+/// 可变处理器会在内部串行调用，因此可以安全地捕获并修改自身状态。
+pub trait CommandHandler<Args, Kind>: Send + 'static {
     fn into_dyn(self) -> DynCommandHandleFn;
+}
+
+fn lock_handler<F>(handler: &Mutex<F>) -> MutexGuard<'_, F> {
+    handler
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 macro_rules! impl_command_handler {
     () => {
         impl<F, R> CommandHandler<(), SyncCommandHandlerKind> for F
         where
-            F: Fn() -> R + Send + Sync + 'static,
+            F: FnMut() -> R + Send + 'static,
             R: CommandOutput + Send + 'static,
         {
             fn into_dyn(self) -> DynCommandHandleFn {
+                let handler = Mutex::new(self);
                 Arc::new(move |_message| {
-                    let result = (self)();
+                    let result = (lock_handler(&handler))();
                     Box::pin(async move { CommandOutput::into_output(result) })
                 })
             }
@@ -53,13 +67,14 @@ macro_rules! impl_command_handler {
 
         impl<F, Fut, R> CommandHandler<(), AsyncCommandHandlerKind> for F
         where
-            F: Fn() -> Fut + Send + Sync + 'static,
+            F: FnMut() -> Fut + Send + 'static,
             Fut: Future<Output = R> + Send + 'static,
             R: CommandOutput + Send + 'static,
         {
             fn into_dyn(self) -> DynCommandHandleFn {
+                let handler = Mutex::new(self);
                 Arc::new(move |_message| {
-                    let fut = (self)();
+                    let fut = (lock_handler(&handler))();
                     Box::pin(async move {
                         let result = fut.await;
                         CommandOutput::into_output(result)
@@ -70,12 +85,13 @@ macro_rules! impl_command_handler {
 
         impl<F, R> CommandHandler<(&dyn CommonMessage,), BorrowedMessageSyncCommandHandlerKind> for F
         where
-            F: for<'a> Fn(&'a dyn CommonMessage) -> R + Send + Sync + 'static,
+            F: for<'a> FnMut(&'a dyn CommonMessage) -> R + Send + 'static,
             R: CommandOutput + Send + 'static,
         {
             fn into_dyn(self) -> DynCommandHandleFn {
+                let handler = Mutex::new(self);
                 Arc::new(move |message| {
-                    let result = (self)(message);
+                    let result = (lock_handler(&handler))(message);
                     Box::pin(async move { CommandOutput::into_output(result) })
                 })
             }
@@ -84,18 +100,19 @@ macro_rules! impl_command_handler {
     ($( $ty:ident => $var:ident ),+ $(,)?) => {
         impl<F, R, $($ty),+> CommandHandler<($($ty,)+), SyncCommandHandlerKind> for F
         where
-            F: Fn($($ty),+) -> R + Send + Sync + 'static,
+            F: FnMut($($ty),+) -> R + Send + 'static,
             R: CommandOutput + Send + 'static,
             $(
                 $ty: for<'a> FromCommonMessage<'a> + Send + 'static,
             )+
         {
             fn into_dyn(self) -> DynCommandHandleFn {
+                let handler = Mutex::new(self);
                 Arc::new(move |message| {
                     $(
                         let $var = <$ty as FromCommonMessage<'_>>::from(message);
                     )+
-                    let result = (self)($($var),+);
+                    let result = (lock_handler(&handler))($($var),+);
                     Box::pin(async move { CommandOutput::into_output(result) })
                 })
             }
@@ -103,7 +120,7 @@ macro_rules! impl_command_handler {
 
         impl<F, Fut, R, $($ty),+> CommandHandler<($($ty,)+), AsyncCommandHandlerKind> for F
         where
-            F: Fn($($ty),+) -> Fut + Send + Sync + 'static,
+            F: FnMut($($ty),+) -> Fut + Send + 'static,
             Fut: Future<Output = R> + Send + 'static,
             R: CommandOutput + Send + 'static,
             $(
@@ -111,11 +128,12 @@ macro_rules! impl_command_handler {
             )+
         {
             fn into_dyn(self) -> DynCommandHandleFn {
+                let handler = Mutex::new(self);
                 Arc::new(move |message| {
                     $(
                         let $var = <$ty as FromCommonMessage<'_>>::from(message);
                     )+
-                    let fut = (self)($($var),+);
+                    let fut = (lock_handler(&handler))($($var),+);
                     Box::pin(async move {
                         let result = fut.await;
                         CommandOutput::into_output(result)

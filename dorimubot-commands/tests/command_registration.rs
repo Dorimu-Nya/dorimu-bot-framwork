@@ -1,4 +1,6 @@
-use dorimubot_commands::{CommandHandler, CommandsStore, DynCommandHandleFn, ReplyingMessage};
+use dorimubot_commands::{
+    CommandHandler, CommandPlugin, CommandsStore, DynCommandHandleFn, ReplyingMessage,
+};
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::common::{C2cUser, User};
 use std::collections::HashMap;
@@ -49,6 +51,17 @@ fn manually_registered_command() -> ReplyingMessage {
     ReplyingMessage::Text("registered manually".to_string())
 }
 
+struct MutableCommand {
+    calls: usize,
+}
+
+impl MutableCommand {
+    fn handle(&mut self) -> ReplyingMessage {
+        self.calls += 1;
+        ReplyingMessage::Text(format!("called {} times", self.calls))
+    }
+}
+
 #[tokio::test]
 async fn function_handler_is_registered_and_runs() {
     let mut commands = HashMap::new();
@@ -89,4 +102,21 @@ async fn stateful_closure_handler_is_registered_and_runs() {
         "Hi from Earth",
     )
     .await;
+}
+
+#[tokio::test]
+async fn mutable_method_handler_is_registered_and_runs_repeatedly() {
+    let mut command = MutableCommand { calls: 0 };
+    let handler = into_command_handler(move || command.handle());
+    let message = command_message("/mutable-method");
+
+    assert_text_response(handler.clone(), &message, "called 1 times").await;
+    assert_text_response(handler, &message, "called 2 times").await;
+}
+
+#[test]
+fn with_command_accepts_a_mutable_method_handler() {
+    let mut command = MutableCommand { calls: 0 };
+
+    let _plugin = CommandPlugin::new().with_command("/mutable-method", move || command.handle());
 }

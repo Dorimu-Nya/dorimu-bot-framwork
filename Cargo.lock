@@ -275,7 +275,7 @@ dependencies = [
 
 [[package]]
 name = "dorimubot-axum"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "axum",
  "dorimubot-framework-core",
@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "dorimubot-framework"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "dorimubot-axum",
  "dorimubot-commands",

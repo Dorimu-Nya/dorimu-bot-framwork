@@ -1019,9 +1019,9 @@ dependencies = [
 
 [[package]]
 name = "qqbot-rust-sdk"
-version = "0.0.3"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6c21fdf4f0c774d89fc084b8e398109982e54ad4a7d1d2dbdeca416705a9bd8"
+checksum = "7c5231ec8773aed3c64eba08b8290339b1994e1fc7b4c10942c59e5a90385c0b"
 dependencies = [
  "async-trait",
  "ed25519-dalek",

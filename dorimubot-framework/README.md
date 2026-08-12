@@ -10,9 +10,8 @@
 
 Example 1:
 ```rust
-#[tokio::main]
-async fn main() {
-    let app = QQBot::new(QQBotConfig::new()).await;
+fn main() {
+    let app = QQBot::new(QQBotConfig::new());
     app.register_event_handler(
         C2cEventKind::C2cMessageCreate,
         move |_message: C2cMessage| {
@@ -23,9 +22,8 @@ async fn main() {
 ```
 Example 2:
 ```rust
-#[tokio::main]
-async fn main() {
-    let app = QQBot::new(QQBotConfig::new()).await;
+fn main() {
+    let app = QQBot::new(QQBotConfig::new());
     app.register_event_handler(GroupEventKind::GroupAtMessageCreate, group_message_handler)
 }
 
@@ -39,9 +37,8 @@ fn group_message_handler(message: GroupMessage) {
 
 Example 1:
 ```rust
-#[tokio::main]
-async fn main() {
-    let app = QQBot::new(QQBotConfig::new()).await;
+fn main() {
+    let app = QQBot::new(QQBotConfig::new());
     let command_plugin = CommandPlugin::new()
         .with_command("/ping", || ReplyingMessage::Text("Pong!".to_string()));
     command_plugin.register(&app);
@@ -51,9 +48,8 @@ async fn main() {
 Example 2:
 需要启用 feature `commands-macros`
 ```rust
-#[tokio::main]
-async fn main() {
-    let app = QQBot::new(QQBotConfig::new()).await;
+fn main() {
+    let app = QQBot::new(QQBotConfig::new());
     let command_plugin = CommandPlugin::new();
     command_plugin.register(&app);
 }

@@ -51,6 +51,54 @@ fn group_payload() -> DispatchPayload {
 }
 
 #[tokio::test]
+async fn group_message_create_passes_payload_and_variant_value() {
+    static CALLS: AtomicUsize = AtomicUsize::new(0);
+
+    fn borrowed_handler(payload: &DispatchPayload, message: &GroupMessage) {
+        assert!(matches!(
+            payload.event,
+            qqbot_rust_sdk::events::payload::event::Event::GroupEvent(
+                qqbot_rust_sdk::events::group::event::GroupEvent::GroupMessageCreate(_)
+            )
+        ));
+        assert_eq!(message.content.as_deref(), Some("event-registry"));
+        CALLS.fetch_add(1, Ordering::SeqCst);
+    }
+
+    let app = QQBot::new(QQBotConfig::new());
+    app.register_event_handler(GroupEventKind::GroupMessageCreate, borrowed_handler);
+    app.register_event_handler(
+        GroupEventKind::GroupMessageCreate,
+        |payload: DispatchPayload, message: GroupMessage| async move {
+            assert!(matches!(
+                payload.event,
+                qqbot_rust_sdk::events::payload::event::Event::GroupEvent(
+                    qqbot_rust_sdk::events::group::event::GroupEvent::GroupMessageCreate(_)
+                )
+            ));
+            assert_eq!(message.content.as_deref(), Some("event-registry"));
+            CALLS.fetch_add(1, Ordering::SeqCst);
+        },
+    );
+    CALLS.store(0, Ordering::SeqCst);
+
+    let mut payload = group_payload();
+    payload.event = serde_json::from_value(serde_json::json!({
+        "t": "GROUP_MESSAGE_CREATE",
+        "d": serde_json::to_value(match &payload.event {
+            qqbot_rust_sdk::events::payload::event::Event::GroupEvent(
+                qqbot_rust_sdk::events::group::event::GroupEvent::GroupAtMessageCreate(message),
+            ) => message,
+            _ => unreachable!(),
+        }).unwrap()
+    }))
+    .unwrap();
+
+    app.webhook_handler(WebhookPayload::Dispatch(payload)).await;
+    assert_eq!(CALLS.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
 async fn named_group_message_handler_is_scoped_to_the_registered_app() {
     let registered_app = group_app(true);
     let unregistered_app = group_app(false);

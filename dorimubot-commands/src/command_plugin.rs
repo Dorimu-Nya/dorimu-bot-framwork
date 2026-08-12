@@ -5,10 +5,8 @@ use crate::{
 use dorimubot_framework_core::{QQApiCLient, QQBot};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
-use qqbot_rust_sdk::events::group::event::{GroupEvent, GroupEventKind};
+use qqbot_rust_sdk::events::group::event::GroupEventKind;
 use qqbot_rust_sdk::events::group::models::{GroupMention, GroupMessage};
-use qqbot_rust_sdk::events::payload::event::Event;
-use qqbot_rust_sdk::events::payload::payload::DispatchPayload;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::{error, info, warn};
@@ -91,8 +89,6 @@ impl CommandPlugin {
         });
 
         let api = app.get_api_client();
-        // SDK 的 GroupMessage 提取器目前只覆盖 GroupAtMessageCreate，
-        // 全量群消息需要从完整载荷中显式取出。
         app.register_event_handler(
             GroupEventKind::GroupMessageCreate,
             move |message| {
@@ -133,16 +129,19 @@ impl CommandPlugin {
         commands: CommandsStore,
     ) {
         if let Some(mentions) = &message.mentions {
-            if let Some(mention) = mentions
+            if mentions
                 .iter()
-                .find(|m| matches!(m, GroupMention::Single(m) if m.is_you))
+                .any(|m| matches!(m, GroupMention::Single(m) if m.is_you))
             {
                 let mut message = message.clone();
                 if let Some(content) = &message.content {
                     message.content = Some(
-                        regex::Regex::new(r"@<\d+>")
+                        regex::Regex::new(r"<@[A-Za-z0-9]+>")
                         .unwrap()
-                        .replace_all(content.as_str(), "").into_owned()
+                        .replace_all(content.as_str(), "")
+                            .trim()
+                            .to_string()
+
                     )
                 }
                 Self::handle_group(message, api, commands).await;

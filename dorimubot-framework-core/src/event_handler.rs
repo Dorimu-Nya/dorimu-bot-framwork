@@ -1,4 +1,6 @@
-use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, FromDispatchPayload};
+use qqbot_rust_sdk::events::payload::payload::DispatchPayload;
+use serde::de::DeserializeOwned;
+use std::any::Any;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -8,7 +10,34 @@ pub type EventHandlerFuture<'a> = Pin<Box<dyn Future<Output = ()> + Send + 'a>>;
 
 /// 擦除具体参数后的事件处理器，用于保存在事件注册表中。
 pub type DynEventHandler =
-    Arc<dyn for<'a> Fn(&'a DispatchPayload) -> EventHandlerFuture<'a> + Send + Sync>;
+    Arc<dyn for<'a> Fn(EventHandlerInput<'a>) -> EventHandlerFuture<'a> + Send + Sync>;
+
+/// 一次事件处理调用可使用的参数来源。
+///
+/// `payload` 是完整的下行载荷，`event_value` 是当前事件枚举变体携带的值。
+#[derive(Clone, Copy)]
+pub struct EventHandlerInput<'a> {
+    payload: &'a DispatchPayload,
+    event_value: &'a (dyn Any + Send + Sync),
+}
+
+impl<'a> EventHandlerInput<'a> {
+    pub(crate) fn new(
+        payload: &'a DispatchPayload,
+        event_value: &'a (dyn Any + Send + Sync),
+    ) -> Self {
+        Self {
+            payload,
+            event_value,
+        }
+    }
+
+    fn get<T: Any>(&self) -> Option<&'a T> {
+        (self.payload as &dyn Any)
+            .downcast_ref::<T>()
+            .or_else(|| self.event_value.downcast_ref::<T>())
+    }
+}
 
 /// 同步事件函数的适配标记。
 pub struct SyncEventHandlerKind;
@@ -20,7 +49,8 @@ pub struct BorrowedEventSyncHandlerKind;
 /// 将普通函数适配为统一事件处理函数的 trait。
 ///
 /// `Args` 由函数参数推导，`Kind` 将同步函数与异步函数分开，避免 trait
-/// coherence 冲突。具体事件参数通过 [`FromDispatchPayload`] 从 webhook 载荷提取。
+/// coherence 冲突。每个参数按实际类型从完整 [`DispatchPayload`] 或当前
+/// 事件枚举变体携带的值中提取。
 pub trait EventHandler<Args, Kind>: Send + Sync + 'static {
     fn into_dyn(self) -> DynEventHandler;
 }
@@ -50,19 +80,23 @@ macro_rules! impl_event_handler {
         }
     };
     ($( $ty:ident => $var:ident ),+ $(,)?) => {
+        // `DeserializeOwned` is only used to exclude reference types from these
+        // generic parameters and keep borrowed/owned handler impls disjoint.
+        // Parameter extraction itself is a direct `Any` downcast and never
+        // serializes or deserializes the event value.
         impl<F, $($ty),+> EventHandler<($($ty,)+), BorrowedEventSyncHandlerKind> for F
         where
             F: Fn($(& $ty),+) + Send + Sync + 'static,
-            $($ty: FromDispatchPayload + Send + Sync + 'static,)+
+            $($ty: Any + DeserializeOwned + Send + Sync,)+
         {
             fn into_dyn(self) -> DynEventHandler {
-                Arc::new(move |payload| {
+                Arc::new(move |input| {
                     $(
-                        let Some($var) = <$ty as FromDispatchPayload>::from(payload) else {
+                        let Some($var) = input.get::<$ty>() else {
                             return Box::pin(async {});
                         };
                     )+
-                    self($(& $var),+);
+                    self($($var),+);
                     Box::pin(async {})
                 })
             }
@@ -71,12 +105,12 @@ macro_rules! impl_event_handler {
         impl<F, $($ty),+> EventHandler<($($ty,)+), SyncEventHandlerKind> for F
         where
             F: Fn($($ty),+) + Send + Sync + 'static,
-            $($ty: FromDispatchPayload + Send + 'static,)+
+            $($ty: Any + Clone + DeserializeOwned + Send,)+
         {
             fn into_dyn(self) -> DynEventHandler {
-                Arc::new(move |payload| {
+                Arc::new(move |input| {
                     $(
-                        let Some($var) = <$ty as FromDispatchPayload>::from(payload) else {
+                        let Some($var) = input.get::<$ty>().cloned() else {
                             return Box::pin(async {});
                         };
                     )+
@@ -90,12 +124,12 @@ macro_rules! impl_event_handler {
         where
             F: Fn($($ty),+) -> Fut + Send + Sync + 'static,
             Fut: Future<Output = ()> + Send + 'static,
-            $($ty: FromDispatchPayload + Send + 'static,)+
+            $($ty: Any + Clone + DeserializeOwned + Send,)+
         {
             fn into_dyn(self) -> DynEventHandler {
-                Arc::new(move |payload| {
+                Arc::new(move |input| {
                     $(
-                        let Some($var) = <$ty as FromDispatchPayload>::from(payload) else {
+                        let Some($var) = input.get::<$ty>().cloned() else {
                             return Box::pin(async {});
                         };
                     )+

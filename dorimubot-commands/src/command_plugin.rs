@@ -6,7 +6,7 @@ use dorimubot_framework_core::{QQApiCLient, QQBot};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::group::event::{GroupEvent, GroupEventKind};
-use qqbot_rust_sdk::events::group::models::GroupMessage;
+use qqbot_rust_sdk::events::group::models::{GroupMention, GroupMessage};
 use qqbot_rust_sdk::events::payload::event::Event;
 use qqbot_rust_sdk::events::payload::payload::DispatchPayload;
 use std::collections::HashMap;
@@ -128,16 +128,26 @@ impl CommandPlugin {
     }
 
     async fn handle_group_message_create(
-        mut message: GroupMessage,
+        message: GroupMessage,
         api: Arc<QQApiCLient>,
         commands: CommandsStore,
     ) {
-        let Some(content) = message.content.as_deref() else {
-            return;
-        };
-
-        message.content = Some(content.trim().to_string());
-        Self::handle_group(message, api, commands).await;
+        if let Some(mentions) = &message.mentions {
+            if let Some(mention) = mentions
+                .iter()
+                .find(|m| matches!(m, GroupMention::Single(m) if m.is_you))
+            {
+                let mut message = message.clone();
+                if let Some(content) = &message.content {
+                    message.content = Some(
+                        regex::Regex::new(r"@<\d+>")
+                        .unwrap()
+                        .replace_all(content.as_str(), "").into_owned()
+                    )
+                }
+                Self::handle_group(message, api, commands).await;
+            }
+        }
     }
 
     async fn handle_message(

@@ -59,6 +59,39 @@ fn ping() -> ReplyingMessage {
     Text(String::from("Pong!"))
 }
 ```
+
+Example 3:
+有状态命令可以实现 `Command` 后直接传给 `with_command`。`Args` 使用元组表示参数列表，
+支持 0～8 个 `FromCommonMessage` 参数，并会和函数/闭包处理器一样自动从消息中提取：
+```rust
+use dorimubot_framework::dorimubot_commands::{Command, CommandPlugin, ReplyingMessage};
+
+struct CountingCommand {
+    calls: usize,
+}
+
+impl Command for CountingCommand {
+    type Args = (String, Option<Vec<String>>);
+    type Output = ReplyingMessage;
+
+    fn handle(&mut self, (content, words): Self::Args) -> Self::Output {
+        self.calls += 1;
+        ReplyingMessage::Text(format!(
+            "{content}; {} words; called {} times",
+            words.map_or(0, |words| words.len()),
+            self.calls,
+        ))
+    }
+}
+
+fn command_plugin() -> CommandPlugin {
+    CommandPlugin::new().with_command("/count", CountingCommand { calls: 0 })
+}
+```
+
+异步且需要修改自身状态的命令可实现 `AsyncCommand`。零参数使用 `type Args = ()`，
+单参数使用 `(A1,)`，多个参数使用 `(A1, A2, ...)`。
+
 ## 当前开发目标和进度
 
 - [x] Webhook 事件的解析和处理函数

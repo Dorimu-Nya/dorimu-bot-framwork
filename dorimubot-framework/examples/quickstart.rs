@@ -1,5 +1,5 @@
 use dorimubot_framework::{
-    dorimubot_commands::{command, CommandPlugin, ReplyingMessage},
+    dorimubot_commands::{command, Command, CommandPlugin, ReplyingMessage},
     dorimubot_framework_core::{CredentialConfig, QQBot, QQBotConfig},
     run_dorimubot,
 };
@@ -19,6 +19,10 @@ struct HelloCmd {
     location: String,
 }
 
+struct GreetingCommand {
+    calls: usize,
+}
+
 impl CustomState {
     fn new() -> Self {
         Self {
@@ -34,6 +38,20 @@ impl CustomState {
 impl HelloCmd {
     fn say_hi(&self) -> ReplyingMessage {
         Text(String::from("Hi from ") + self.location.as_str())
+    }
+}
+
+impl Command for GreetingCommand {
+    type Args = (String, Option<Vec<String>>);
+    type Output = ReplyingMessage;
+
+    fn handle(&mut self, (content, words): Self::Args) -> Self::Output {
+        self.calls += 1;
+        Text(format!(
+            "{content}; {} words; called {} times",
+            words.map_or(0, |words| words.len()),
+            self.calls,
+        ))
     }
 }
 
@@ -58,7 +76,8 @@ async fn main() -> std::io::Result<()> {
             let value = counting_state.value.load(Ordering::SeqCst);
             counting_state.plus();
             Text(format!("Current {value}"))
-        });
+        })
+        .with_command("/greeting", GreetingCommand { calls: 0 });
 
     let config = QQBotConfig::new()
         .credential(CredentialConfig {

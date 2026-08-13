@@ -1,4 +1,5 @@
 use super::replying::ReplyingMessage;
+use crate::arity::for_each_command_arity;
 use crate::common::{CommonMessage, FromCommonMessage};
 use std::{
     fmt::Display,
@@ -144,15 +145,7 @@ macro_rules! impl_command_handler {
     };
 }
 
-impl_command_handler!();
-impl_command_handler!(A1 => a1);
-impl_command_handler!(A1 => a1, A2 => a2);
-impl_command_handler!(A1 => a1, A2 => a2, A3 => a3);
-impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4);
-impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5);
-impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6);
-impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6, A7 => a7);
-impl_command_handler!(A1 => a1, A2 => a2, A3 => a3, A4 => a4, A5 => a5, A6 => a6, A7 => a7, A8 => a8);
+for_each_command_arity!(impl_command_handler);
 
 /// command 函数的返回值的统一转换trait
 pub trait CommandOutput {

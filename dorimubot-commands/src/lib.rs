@@ -2,6 +2,7 @@ pub use dorimubot_commands_macros::command;
 #[doc(hidden)]
 pub use inventory;
 
+mod arity;
 mod command;
 mod command_plugin;
 pub mod common;

@@ -63,6 +63,17 @@ impl MutableCommand {
     }
 }
 
+struct NoArgsCommand;
+
+impl Command for NoArgsCommand {
+    type Args = ();
+    type Output = ReplyingMessage;
+
+    fn handle(&mut self, (): Self::Args) -> Self::Output {
+        ReplyingMessage::Text("no args".to_string())
+    }
+}
+
 struct StructCommand {
     calls: usize,
 }
@@ -79,6 +90,27 @@ impl Command for StructCommand {
             words.map_or(0, |words| words.len()),
             self.calls
         ))
+    }
+}
+
+struct EightArgsCommand;
+
+impl Command for EightArgsCommand {
+    type Args = (
+        String,
+        String,
+        String,
+        String,
+        String,
+        String,
+        String,
+        String,
+    );
+    type Output = ReplyingMessage;
+
+    fn handle(&mut self, args: Self::Args) -> Self::Output {
+        let (a1, a2, a3, a4, a5, a6, a7, a8) = args;
+        ReplyingMessage::Text([a1, a2, a3, a4, a5, a6, a7, a8].join(" | "))
     }
 }
 
@@ -176,6 +208,26 @@ async fn command_struct_is_registered_with_multiple_arguments() {
 }
 
 #[tokio::test]
+async fn command_struct_is_registered_without_arguments() {
+    let handler = into_command_handler(NoArgsCommand);
+
+    assert_text_response(handler, &command_message("/no-args"), "no args").await;
+}
+
+#[tokio::test]
+async fn command_struct_supports_eight_arguments() {
+    let handler = into_command_handler(EightArgsCommand);
+    let message = command_message("/eight");
+
+    assert_text_response(
+        handler,
+        &message,
+        "/eight | /eight | /eight | /eight | /eight | /eight | /eight | /eight",
+    )
+    .await;
+}
+
+#[tokio::test]
 async fn async_command_struct_can_mutate_itself_across_awaits() {
     let handler = into_command_handler(AsyncStructCommand { calls: 0 });
     let message = command_message("/async-struct");
@@ -187,6 +239,8 @@ async fn async_command_struct_can_mutate_itself_across_awaits() {
 #[test]
 fn with_command_accepts_command_structs() {
     let _plugin = CommandPlugin::new()
+        .with_command("/no-args", NoArgsCommand)
         .with_command("/struct-command", StructCommand { calls: 0 })
+        .with_command("/eight", EightArgsCommand)
         .with_command("/async-struct", AsyncStructCommand { calls: 0 });
 }

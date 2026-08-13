@@ -1,3 +1,4 @@
+use crate::arity::for_each_command_arity;
 use crate::common::{CommonMessage, FromCommonMessage};
 use crate::defining::{CommandHandler, CommandOutput, DynCommandHandleFn};
 use std::future::Future;
@@ -20,12 +21,13 @@ pub trait CommandArgs: Send + 'static {
     fn from_message(message: &dyn CommonMessage) -> Self;
 }
 
-impl CommandArgs for () {
-    fn from_message(_message: &dyn CommonMessage) -> Self {}
-}
-
 macro_rules! impl_command_args {
-    ($( $ty:ident ),+ $(,)?) => {
+    () => {
+        impl CommandArgs for () {
+            fn from_message(_message: &dyn CommonMessage) -> Self {}
+        }
+    };
+    ($( $ty:ident => $var:ident ),+ $(,)?) => {
         impl<$($ty),+> CommandArgs for ($($ty,)+)
         where
             $(
@@ -43,14 +45,7 @@ macro_rules! impl_command_args {
     };
 }
 
-impl_command_args!(A1);
-impl_command_args!(A1, A2);
-impl_command_args!(A1, A2, A3);
-impl_command_args!(A1, A2, A3, A4);
-impl_command_args!(A1, A2, A3, A4, A5);
-impl_command_args!(A1, A2, A3, A4, A5, A6);
-impl_command_args!(A1, A2, A3, A4, A5, A6, A7);
-impl_command_args!(A1, A2, A3, A4, A5, A6, A7, A8);
+for_each_command_arity!(impl_command_args);
 
 /// 可以直接注册到 [`crate::CommandPlugin`] 的同步命令结构体。
 ///

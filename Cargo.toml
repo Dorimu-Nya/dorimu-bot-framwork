@@ -22,7 +22,7 @@ dorimubot-commands = { version = "0.0.5", path = "dorimubot-commands" }
 dorimubot-commands-macros = { version = "0.0.5", path = "dorimubot-commands-macros" }
 dorimubot-framework-core = { version = "0.0.5", path = "dorimubot-framework-core" }
 inventory = "0.3.24"
-qqbot-rust-sdk = { version = "0.0.6" }
+qqbot-rust-sdk = { version = "0.0.7" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "signal", "rt"] }

@@ -14,28 +14,28 @@ pub type DynEventHandler =
 
 /// 一次事件处理调用可使用的参数来源。
 ///
-/// `payload` 是完整的下行载荷，`event_value` 是当前事件枚举变体携带的值。
+/// `payload` 是完整的下行载荷，`event_data` 是当前事件枚举变体携带的数据。
 #[derive(Clone, Copy)]
 pub struct EventHandlerInput<'a> {
     payload: &'a DispatchPayload,
-    event_value: &'a (dyn Any + Send + Sync),
+    event_data: &'a (dyn Any + Send + Sync),
 }
 
 impl<'a> EventHandlerInput<'a> {
     pub(crate) fn new(
         payload: &'a DispatchPayload,
-        event_value: &'a (dyn Any + Send + Sync),
+        event_data: &'a (dyn Any + Send + Sync),
     ) -> Self {
         Self {
             payload,
-            event_value,
+            event_data,
         }
     }
 
     fn get<T: Any>(&self) -> Option<&'a T> {
         (self.payload as &dyn Any)
             .downcast_ref::<T>()
-            .or_else(|| self.event_value.downcast_ref::<T>())
+            .or_else(|| self.event_data.downcast_ref::<T>())
     }
 }
 
@@ -50,7 +50,7 @@ pub struct BorrowedEventSyncHandlerKind;
 ///
 /// `Args` 由函数参数推导，`Kind` 将同步函数与异步函数分开，避免 trait
 /// coherence 冲突。每个参数按实际类型从完整 [`DispatchPayload`] 或当前
-/// 事件枚举变体携带的值中提取。
+/// 事件枚举变体携带的数据中提取。
 pub trait EventHandler<Args, Kind>: Send + Sync + 'static {
     fn into_dyn(self) -> DynEventHandler;
 }
@@ -83,7 +83,7 @@ macro_rules! impl_event_handler {
         // `DeserializeOwned` is only used to exclude reference types from these
         // generic parameters and keep borrowed/owned handler impls disjoint.
         // Parameter extraction itself is a direct `Any` downcast and never
-        // serializes or deserializes the event value.
+        // serializes or deserializes the event data.
         impl<F, $($ty),+> EventHandler<($($ty,)+), BorrowedEventSyncHandlerKind> for F
         where
             F: Fn($(& $ty),+) + Send + Sync + 'static,

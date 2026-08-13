@@ -51,7 +51,7 @@ fn group_payload() -> DispatchPayload {
 }
 
 #[tokio::test]
-async fn group_message_create_passes_payload_and_variant_value() {
+async fn group_message_create_passes_payload_and_variant_data() {
     static CALLS: AtomicUsize = AtomicUsize::new(0);
 
     fn borrowed_handler(payload: &DispatchPayload, message: &GroupMessage) {

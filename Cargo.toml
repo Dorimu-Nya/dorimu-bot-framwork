@@ -10,17 +10,17 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.0.5"
+version = "0.0.6"
 repository = "https://github.com/Dorimu-Nya/dorimubot-framework/"
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [workspace.dependencies]
 base64 = "0.22"
-dorimubot-axum = { version = "0.0.5", path = "dorimubot-axum" }
-dorimubot-commands = { version = "0.0.5", path = "dorimubot-commands" }
+dorimubot-axum = { version = "0.0.6", path = "dorimubot-axum" }
+dorimubot-commands = { version = "0.0.6", path = "dorimubot-commands" }
 dorimubot-commands-macros = { version = "0.0.5", path = "dorimubot-commands-macros" }
-dorimubot-framework-core = { version = "0.0.5", path = "dorimubot-framework-core" }
+dorimubot-framework-core = { version = "0.0.6", path = "dorimubot-framework-core" }
 inventory = "0.3.24"
 qqbot-rust-sdk = { version = "0.0.7" }
 serde = { version = "1", features = ["derive"] }

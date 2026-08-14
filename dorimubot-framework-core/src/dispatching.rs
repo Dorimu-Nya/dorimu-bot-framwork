@@ -1,9 +1,9 @@
 use crate::app::QQBot;
-use crate::event_handler::EventHandlerInput;
 use qqbot_rust_sdk::events::payload::event::Event;
 use qqbot_rust_sdk::events::payload::event::EventKind;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
 use qqbot_rust_sdk::events::validation::{ValidationRequest, ValidationResponse};
+use std::any::Any;
 use tracing::debug;
 
 impl QQBot {
@@ -41,45 +41,21 @@ impl QQBot {
 
     /// 处理 opcode 为 0 的事件分发。
     async fn dispatch_event(&self, payload: DispatchPayload) {
-        match &payload.event {
-            Event::C2cEvent(event) => {
-                self.dispatch_kind(event.to_kind(), event.data(), &payload)
-                    .await
-            }
-            Event::GroupEvent(event) => {
-                self.dispatch_kind(event.to_kind(), event.data(), &payload)
-                    .await
-            }
-            Event::GuildEvent(event) => {
-                self.dispatch_kind(event.to_kind(), event.data(), &payload)
-                    .await
-            }
-            Event::ForumEvent(event) => {
-                self.dispatch_kind(event.to_kind(), event.data(), &payload)
-                    .await
-            }
-            Event::InteractionEvent(event) => {
-                self.dispatch_kind(event.to_kind(), event.data(), &payload)
-                    .await
-            }
-            Event::MessageReactionEvent(event) => {
-                self.dispatch_kind(event.to_kind(), event.data(), &payload)
-                    .await
-            }
-        }
+        let (kind, event_data): (EventKind, &(dyn Any + Send + Sync)) = match &payload.event {
+            Event::C2cEvent(event) => (event.to_kind().into(), event.data()),
+            Event::GroupEvent(event) => (event.to_kind().into(), event.data()),
+            Event::GuildEvent(event) => (event.to_kind().into(), event.data()),
+            Event::ForumEvent(event) => (event.to_kind().into(), event.data()),
+            Event::InteractionEvent(event) => (event.to_kind().into(), event.data()),
+            Event::MessageReactionEvent(event) => (event.to_kind().into(), event.data()),
+        };
+
+        self.dispatch_kind(kind, event_data).await;
     }
 
-    async fn dispatch_kind<K>(
-        &self,
-        kind: K,
-        event_data: &(dyn std::any::Any + Send + Sync),
-        payload: &DispatchPayload,
-    ) where
-        K: Into<EventKind>,
-    {
-        let input = EventHandlerInput::new(payload, event_data);
+    async fn dispatch_kind(&self, kind: EventKind, event_data: &(dyn Any + Send + Sync)) {
         for handler in self.event_handlers.get_handlers(kind) {
-            handler(input).await
+            handler(event_data).await
         }
     }
 }

@@ -12,7 +12,9 @@ pub mod store;
 
 pub use command::{AsyncCommand, Command};
 #[doc(hidden)]
-pub use command::{AsyncStructCommandHandlerKind, CommandArgs, StructCommandHandlerKind};
+pub use command::{
+    AsyncCommandArgs, AsyncStructCommandHandlerKind, CommandArgs, StructCommandHandlerKind,
+};
 pub use command_plugin::CommandPlugin;
 pub use common::{CommonMessage, FromCommonMessage, MessageFrom};
 pub use defining::{

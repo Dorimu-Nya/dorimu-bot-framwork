@@ -21,6 +21,14 @@ pub trait CommandArgs: Send + 'static {
     fn from_message(message: &dyn CommonMessage) -> Self;
 }
 
+/// 可从一条消息中提取的异步命令参数列表。
+///
+/// 与 [`CommandArgs`] 不同，该 trait 允许参数借用消息本身。
+#[doc(hidden)]
+pub trait AsyncCommandArgs<'a>: Send + 'a {
+    fn from_message(message: &'a dyn CommonMessage) -> Self;
+}
+
 macro_rules! impl_command_args {
     () => {
         impl CommandArgs for () {
@@ -47,6 +55,32 @@ macro_rules! impl_command_args {
 
 for_each_command_arity!(impl_command_args);
 
+macro_rules! impl_async_command_args {
+    () => {
+        impl AsyncCommandArgs<'_> for () {
+            fn from_message(_message: &dyn CommonMessage) -> Self {}
+        }
+    };
+    ($( $ty:ident => $var:ident ),+ $(,)?) => {
+        impl<'a, $($ty),+> AsyncCommandArgs<'a> for ($($ty,)+)
+        where
+            $(
+                $ty: FromCommonMessage<'a> + Send + 'a,
+            )+
+        {
+            fn from_message(message: &'a dyn CommonMessage) -> Self {
+                (
+                    $(
+                        <$ty as FromCommonMessage<'a>>::from(message),
+                    )+
+                )
+            }
+        }
+    };
+}
+
+for_each_command_arity!(impl_async_command_args);
+
 /// 可以直接注册到 [`crate::CommandPlugin`] 的同步命令结构体。
 ///
 /// 参数列表通过 [`Command::Args`] 指定：零参数使用 `()`，一个参数使用 `(A1,)`，
@@ -63,10 +97,13 @@ pub trait Command: Send + 'static {
 /// 参数规则与 [`Command`] 相同。处理同一命令实例时会持有异步互斥锁，因此实现可以在
 /// `.await` 前后安全地访问 `&mut self`。
 pub trait AsyncCommand: Send + 'static {
-    type Args: CommandArgs;
+    type Args<'a>: AsyncCommandArgs<'a>;
     type Output: CommandOutput + Send + 'static;
 
-    fn handle(&mut self, args: Self::Args) -> impl Future<Output = Self::Output> + Send + '_;
+    fn handle<'a>(
+        &'a mut self,
+        args: Self::Args<'a>,
+    ) -> impl Future<Output = Self::Output> + Send + 'a;
 }
 
 impl<C> CommandHandler<<C as Command>::Args, StructCommandHandlerKind> for C
@@ -86,17 +123,17 @@ where
     }
 }
 
-impl<C> CommandHandler<<C as AsyncCommand>::Args, AsyncStructCommandHandlerKind> for C
+impl<C> CommandHandler<(), AsyncStructCommandHandlerKind> for C
 where
     C: AsyncCommand,
 {
     fn into_dyn(self) -> DynCommandHandleFn {
         let handler = Arc::new(AsyncMutex::new(self));
         Arc::new(move |message| {
-            let args = C::Args::from_message(message);
             let handler = Arc::clone(&handler);
             Box::pin(async move {
                 let mut handler = handler.lock().await;
+                let args = C::Args::from_message(message);
                 let result = AsyncCommand::handle(&mut *handler, args).await;
                 CommandOutput::into_output(result)
             })

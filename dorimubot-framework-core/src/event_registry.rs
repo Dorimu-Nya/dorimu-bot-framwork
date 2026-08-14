@@ -1,4 +1,5 @@
 use super::event_handler::{DynEventHandler, EventHandler};
+use crate::TypedEventKind;
 use qqbot_rust_sdk::events::payload::event::EventKind;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -14,12 +15,15 @@ impl EventHandlerRegistry {
         Self::default()
     }
 
-    pub(crate) fn register<K, Args, Kind, H>(&self, kind: K, handler: H)
-    where
+    pub(crate) fn register<K, Data, Args, Kind, H>(
+        &self,
+        event: TypedEventKind<K, Data>,
+        handler: H,
+    ) where
         K: Into<EventKind>,
-        H: EventHandler<Args, Kind>,
+        H: EventHandler<Data, Args, Kind>,
     {
-        self.register_dyn(kind, handler.into_dyn());
+        self.register_dyn(event.into_kind(), handler.into_dyn());
     }
 
     fn register_dyn<K>(&self, kind: K, handler: DynEventHandler)

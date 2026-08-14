@@ -1,4 +1,4 @@
-use dorimubot_framework_core::{QQBot, QQBotConfig};
+use dorimubot_framework_core::{QQBot, QQBotConfig, TypedEventKind};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::payload::payload::{DispatchPayload, WebhookPayload};
@@ -10,15 +10,15 @@ static HANDLER_CALLS: AtomicUsize = AtomicUsize::new(0);
 async fn registers_event_handlers_with_supported_signatures() {
     let app = QQBot::new(QQBotConfig::default());
 
-    app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_without_arguments);
-    app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_with_payload);
-    app.register_event_handler(C2cEventKind::C2cMessageCreate, handler_with_event_detail);
+    let event = TypedEventKind::<_, C2cMessage>::new(C2cEventKind::C2cMessageCreate);
+    app.register_event_handler(event, handler_without_arguments);
+    app.register_event_handler(event, handler_with_event_detail);
 
     HANDLER_CALLS.store(0, Ordering::SeqCst);
     app.webhook_handler(WebhookPayload::Dispatch(c2c_payload()))
         .await;
 
-    assert_eq!(HANDLER_CALLS.load(Ordering::SeqCst), 3);
+    assert_eq!(HANDLER_CALLS.load(Ordering::SeqCst), 2);
 }
 
 fn c2c_payload() -> DispatchPayload {
@@ -43,10 +43,6 @@ fn c2c_payload() -> DispatchPayload {
 }
 
 fn handler_without_arguments() {
-    HANDLER_CALLS.fetch_add(1, Ordering::SeqCst);
-}
-
-fn handler_with_payload(_payload: &DispatchPayload) {
     HANDLER_CALLS.fetch_add(1, Ordering::SeqCst);
 }
 

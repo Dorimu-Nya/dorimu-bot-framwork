@@ -2,7 +2,7 @@ use crate::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
 };
-use dorimubot_framework_core::{QQApiCLient, QQBot};
+use dorimubot_framework_core::{QQApiCLient, QQBot, TypedEventKind};
 use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::group::event::GroupEventKind;
@@ -74,23 +74,29 @@ impl CommandPlugin {
 
         let api = app.get_api_client();
         let c2c_commands = commands.clone();
-        app.register_event_handler(C2cEventKind::C2cMessageCreate, move |message| {
-            let api = Arc::clone(&api);
-            let commands = c2c_commands.clone();
-            async move { Self::handle_c2c(message, api, commands).await }
-        });
+        app.register_event_handler(
+            TypedEventKind::<_, C2cMessage>::new(C2cEventKind::C2cMessageCreate),
+            move |message| {
+                let api = Arc::clone(&api);
+                let commands = c2c_commands.clone();
+                async move { Self::handle_c2c(message, api, commands).await }
+            },
+        );
 
         let api = app.get_api_client();
         let group_message_commands = commands.clone();
-        app.register_event_handler(GroupEventKind::GroupAtMessageCreate, move |message| {
-            let api = Arc::clone(&api);
-            let commands = group_message_commands.clone();
-            async move { Self::handle_group(message, api, commands).await }
-        });
+        app.register_event_handler(
+            TypedEventKind::<_, GroupMessage>::new(GroupEventKind::GroupAtMessageCreate),
+            move |message| {
+                let api = Arc::clone(&api);
+                let commands = group_message_commands.clone();
+                async move { Self::handle_group(message, api, commands).await }
+            },
+        );
 
         let api = app.get_api_client();
         app.register_event_handler(
-            GroupEventKind::GroupMessageCreate,
+            TypedEventKind::<_, GroupMessage>::new(GroupEventKind::GroupMessageCreate),
             move |message| {
                 let api = Arc::clone(&api);
                 let commands = commands.clone();

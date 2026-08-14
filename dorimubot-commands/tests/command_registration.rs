@@ -119,13 +119,25 @@ struct AsyncStructCommand {
 }
 
 impl AsyncCommand for AsyncStructCommand {
-    type Args = (String,);
+    type Args<'a> = (String,);
     type Output = ReplyingMessage;
 
-    async fn handle(&mut self, (content,): Self::Args) -> Self::Output {
+    async fn handle<'a>(&'a mut self, (content,): Self::Args<'a>) -> Self::Output {
         tokio::task::yield_now().await;
         self.calls += 1;
         ReplyingMessage::Text(format!("{content} | async call {}", self.calls))
+    }
+}
+
+struct BorrowedMessageAsyncCommand;
+
+impl AsyncCommand for BorrowedMessageAsyncCommand {
+    type Args<'a> = (&'a dyn dorimubot_commands::CommonMessage,);
+    type Output = ReplyingMessage;
+
+    async fn handle<'a>(&'a mut self, (message,): Self::Args<'a>) -> Self::Output {
+        tokio::task::yield_now().await;
+        ReplyingMessage::Text(message.get_content().clone().unwrap_or_default())
     }
 }
 
@@ -234,6 +246,18 @@ async fn async_command_struct_can_mutate_itself_across_awaits() {
 
     assert_text_response(handler.clone(), &message, "/async-struct | async call 1").await;
     assert_text_response(handler, &message, "/async-struct | async call 2").await;
+}
+
+#[tokio::test]
+async fn async_command_struct_can_borrow_common_message() {
+    let handler = into_command_handler(BorrowedMessageAsyncCommand);
+
+    assert_text_response(
+        handler,
+        &command_message("/borrowed-message"),
+        "/borrowed-message",
+    )
+    .await;
 }
 
 #[test]

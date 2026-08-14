@@ -2,10 +2,8 @@ use crate::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
 };
-use dorimubot_framework_core::{QQApiCLient, QQBot, TypedEventKind};
-use qqbot_rust_sdk::events::c2c::event::C2cEventKind;
+use dorimubot_framework_core::{events, QQApiCLient, QQBot};
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
-use qqbot_rust_sdk::events::group::event::GroupEventKind;
 use qqbot_rust_sdk::events::group::models::{GroupMention, GroupMessage};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -74,20 +72,17 @@ impl CommandPlugin {
 
         let api = app.get_api_client();
         let c2c_commands = commands.clone();
-        app.register_event_handler(
-            TypedEventKind::<_, C2cMessage>::new(C2cEventKind::C2cMessageCreate),
-            move |message| {
-                let api = Arc::clone(&api);
-                let commands = c2c_commands.clone();
-                async move { Self::handle_c2c(message, api, commands).await }
-            },
-        );
+        app.register_event_handler(events::c2c::C2cMessageCreate, move |message: C2cMessage| {
+            let api = Arc::clone(&api);
+            let commands = c2c_commands.clone();
+            async move { Self::handle_c2c(message, api, commands).await }
+        });
 
         let api = app.get_api_client();
         let group_message_commands = commands.clone();
         app.register_event_handler(
-            TypedEventKind::<_, GroupMessage>::new(GroupEventKind::GroupAtMessageCreate),
-            move |message| {
+            events::group::GroupAtMessageCreate,
+            move |message: GroupMessage| {
                 let api = Arc::clone(&api);
                 let commands = group_message_commands.clone();
                 async move { Self::handle_group(message, api, commands).await }
@@ -96,13 +91,11 @@ impl CommandPlugin {
 
         let api = app.get_api_client();
         app.register_event_handler(
-            TypedEventKind::<_, GroupMessage>::new(GroupEventKind::GroupMessageCreate),
-            move |message| {
+            events::group::GroupMessageCreate,
+            move |message: GroupMessage| {
                 let api = Arc::clone(&api);
                 let commands = commands.clone();
-                async move {
-                    Self::handle_group_message_create(message, api, commands).await
-                }
+                async move { Self::handle_group_message_create(message, api, commands).await }
             },
         );
     }
@@ -143,11 +136,10 @@ impl CommandPlugin {
                 if let Some(content) = &message.content {
                     message.content = Some(
                         regex::Regex::new(r"<@[A-Za-z0-9]+>")
-                        .unwrap()
-                        .replace_all(content.as_str(), "")
+                            .unwrap()
+                            .replace_all(content.as_str(), "")
                             .trim()
-                            .to_string()
-
+                            .to_string(),
                     )
                 }
                 Self::handle_group(message, api, commands).await;

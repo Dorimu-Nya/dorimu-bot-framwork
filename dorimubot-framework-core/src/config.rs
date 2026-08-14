@@ -6,7 +6,7 @@ use serde::Deserialize;
 pub struct ListeningConfig {
     /// 监听地址, 如0.0.0.0:3000
     pub bind_addr: String,
-    /// webhook路径, 如/webhook
+    /// Webhook 路径，如 `/webhook`。
     pub webhook_path: String,
 }
 
@@ -19,7 +19,7 @@ impl Default for ListeningConfig {
     }
 }
 
-/// qqbot官网下发的票据
+/// QQ 机器人官网下发的票据。
 #[derive(Clone, Deserialize)]
 #[serde(default)]
 pub struct CredentialConfig {
@@ -42,9 +42,9 @@ impl Default for CredentialConfig {
 pub struct QQBotConfig {
     /// 监听配置
     pub listening: ListeningConfig,
-    /// qqbot票据配置
+    /// QQ 机器人票据配置。
     pub credential: CredentialConfig,
-    /// api地址覆写
+    /// API 地址覆写。
     pub api_override: Option<String>,
 }
 

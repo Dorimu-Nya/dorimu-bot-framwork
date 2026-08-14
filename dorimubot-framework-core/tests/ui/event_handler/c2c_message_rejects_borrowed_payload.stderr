@@ -1,0 +1,18 @@
+error[E0277]: the trait bound `{closure@$DIR/tests/ui/event_handler/c2c_message_rejects_borrowed_payload.rs:6:55: 6:78}: EventHandler<dorimubot_framework_core::events::c2c::C2cMessageCreate, _, _>` is not satisfied
+ --> tests/ui/event_handler/c2c_message_rejects_borrowed_payload.rs:6:55
+  |
+6 |     app.register_event_handler(c2c::C2cMessageCreate, |_message: &C2cMessage| {});
+  |         ----------------------                        ^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+  |         |
+  |         required by a bound introduced by this call
+  |
+  = help: the trait `dorimubot_framework_core::event_handler::EventHandlerAdapter<dorimubot_framework_core::events::c2c::C2cMessageCreate, _, _>` is not implemented for closure `{closure@$DIR/tests/ui/event_handler/c2c_message_rejects_borrowed_payload.rs:6:55: 6:78}`
+  = note: required for `{closure@$DIR/tests/ui/event_handler/c2c_message_rejects_borrowed_payload.rs:6:55: 6:78}` to implement `EventHandler<dorimubot_framework_core::events::c2c::C2cMessageCreate, _, _>`
+note: required by a bound in `dorimubot_framework_core::registering::<impl QQBot>::register_event_handler`
+ --> src/registering.rs
+  |
+  |     pub fn register_event_handler<E, H, Args, Mode>(&self, event: E, handler: H)
+  |            ---------------------- required by a bound in this associated function
+...
+  |         H: EventHandler<E, Args, Mode>,
+  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `dorimubot_framework_core::registering::<impl QQBot>::register_event_handler`

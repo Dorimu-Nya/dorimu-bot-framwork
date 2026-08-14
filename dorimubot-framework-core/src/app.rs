@@ -15,7 +15,7 @@ pub struct QQBot {
     pub(crate) credential: CredentialConfig,
     /// Webhook 监听配置。
     listening: ListeningConfig,
-    /// 生产环境的 api 客户端
+    /// 生产环境的 API 客户端。
     prod_api_client: Arc<QQApiCLient>,
     /// 当前应用实例注册的事件处理器。
     pub(crate) event_handlers: EventHandlerRegistry,
@@ -24,7 +24,7 @@ pub struct QQBot {
 impl QQBot {
     /// 根据应用配置初始化 API 和事件处理器。
     pub fn new(config: QQBotConfig) -> Self {
-        // api 客户端初始化
+        // 初始化 API 客户端
         let token_provider = HttpTokenProvider::from_env_or_official(
             &config.credential.app_id,
             &config.credential.secret,
@@ -36,7 +36,7 @@ impl QQBot {
         }
         let client = OpenApiClient::new(token_manager, openapi_config);
         let api = Arc::new(OpenApi::new(client, OpenApiPaths::official_defaults()));
-        // api 客户端初始化 end
+        // API 客户端初始化完成
 
         let app = Self {
             credential: config.credential.clone(),
@@ -53,7 +53,7 @@ impl QQBot {
         &self.listening
     }
 
-    /// 获取 api 客户端。
+    /// 获取 API 客户端。
     pub fn get_api_client(&self) -> Arc<QQApiCLient> {
         Arc::clone(&self.prod_api_client)
     }

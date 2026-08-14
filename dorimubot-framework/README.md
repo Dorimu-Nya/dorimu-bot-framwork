@@ -8,29 +8,45 @@
 
 ## 注册事件处理器
 
-Example 1:
+事件通过框架提供的标记类型注册。标记类型会在编译期绑定事件和它的 payload：
+
+示例 1（异步闭包）：
 ```rust
+use dorimubot_framework_core::{events, QQBot, QQBotConfig};
+use qqbot_rust_sdk::events::c2c::models::C2cMessage;
+
 fn main() {
     let app = QQBot::new(QQBotConfig::new());
     app.register_event_handler(
-        C2cEventKind::C2cMessageCreate,
-        move |_message: C2cMessage| {
-            println!("收到消息:{:?}", _message);
+        events::c2c::C2cMessageCreate,
+        move |message: C2cMessage| async move {
+            println!("收到消息:{:?}", message);
         },
     );
 }
 ```
-Example 2:
+
+示例 2（同步函数）：
 ```rust
+use dorimubot_framework_core::{events, QQBot, QQBotConfig};
+use qqbot_rust_sdk::events::group::models::GroupMessage;
+
 fn main() {
     let app = QQBot::new(QQBotConfig::new());
-    app.register_event_handler(GroupEventKind::GroupAtMessageCreate, group_message_handler)
+    app.register_event_handler(
+        events::group::GroupAtMessageCreate,
+        group_message_handler,
+    );
 }
 
 fn group_message_handler(message: GroupMessage) {
     println!("group_message_handler: {:?}", message);
 }
 ```
+
+同步和异步 handler 均受支持。handler 可以接收 0～8 个 owned 参数；对每个参数
+`Arg`，该事件的 payload 都必须满足 `Payload: Into<Arg>`。借用参数（例如
+`&C2cMessage`）不受支持；需要共享的状态或 API 客户端可以由闭包捕获。
 
 ## 注册指令
 需要先启用 feature `commands`

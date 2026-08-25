@@ -1,13 +1,13 @@
 use super::event_registry::EventHandlerRegistry;
-use qqbot_rust_sdk::openapi::{
-    HttpTokenProvider, OpenApi, OpenApiClient, OpenApiConfig, OpenApiPaths, TokenManager,
-};
+use qqbot_rust_sdk::openapi::api::QQApiClient as SdkQQApiClient;
+use qqbot_rust_sdk::openapi::create_api_client::create_qq_api_client;
+use std::error::Error;
 use std::sync::Arc;
-use std::time::Duration;
+use tokio::sync::OnceCell;
 
 use crate::config::{CredentialConfig, ListeningConfig, QQBotConfig};
 
-pub type QQApiCLient = OpenApi<HttpTokenProvider>;
+pub type QQApiClient = SdkQQApiClient;
 
 #[derive(Clone)]
 pub struct QQBot {
@@ -15,37 +15,21 @@ pub struct QQBot {
     pub(crate) credential: CredentialConfig,
     /// Webhook 监听配置。
     listening: ListeningConfig,
-    /// 生产环境的 API 客户端。
-    prod_api_client: Arc<QQApiCLient>,
+    /// 按需初始化的 API 客户端。
+    api_client: Arc<OnceCell<Arc<QQApiClient>>>,
     /// 当前应用实例注册的事件处理器。
     pub(crate) event_handlers: EventHandlerRegistry,
 }
 
 impl QQBot {
-    /// 根据应用配置初始化 API 和事件处理器。
+    /// 根据应用配置创建机器人；API 客户端将在首次使用时初始化。
     pub fn new(config: QQBotConfig) -> Self {
-        // 初始化 API 客户端
-        let token_provider = HttpTokenProvider::from_env_or_official(
-            &config.credential.app_id,
-            &config.credential.secret,
-        );
-        let token_manager = TokenManager::new(token_provider, Duration::from_secs(120));
-        let mut openapi_config = OpenApiConfig::official();
-        if let Some(url) = &config.api_override {
-            openapi_config.base_url = url.clone();
-        }
-        let client = OpenApiClient::new(token_manager, openapi_config);
-        let api = Arc::new(OpenApi::new(client, OpenApiPaths::official_defaults()));
-        // API 客户端初始化完成
-
-        let app = Self {
+        Self {
             credential: config.credential.clone(),
             listening: config.listening.clone(),
-            prod_api_client: api,
+            api_client: Arc::new(OnceCell::new()),
             event_handlers: EventHandlerRegistry::new(),
-        };
-
-        app
+        }
     }
 
     /// 获取 Webhook 监听配置。
@@ -53,8 +37,19 @@ impl QQBot {
         &self.listening
     }
 
-    /// 获取 API 客户端。
-    pub fn get_api_client(&self) -> Arc<QQApiCLient> {
-        Arc::clone(&self.prod_api_client)
+    /// 获取 API 客户端，首次调用时获取 token 并完成初始化。
+    pub async fn get_api_client(&self) -> Result<Arc<QQApiClient>, Box<dyn Error + Send + Sync>> {
+        let app_id = self.credential.app_id.clone();
+        let secret = self.credential.secret.clone();
+        let client = self
+            .api_client
+            .get_or_try_init(|| async move {
+                create_qq_api_client(app_id, secret)
+                    .await
+                    .map(Arc::new)
+                    .map_err(|error| -> Box<dyn Error + Send + Sync> { Box::new(error) })
+            })
+            .await?;
+        Ok(Arc::clone(client))
     }
 }

@@ -1,6 +1,7 @@
-use qqbot_rust_sdk::openapi::models::message::MessageType;
-use qqbot_rust_sdk::openapi::models::message::{
-    MessageArk, MessageEmbed, MessageMarkdown, MessageMedia, SendMessageRequest,
+use qqbot_rust_sdk::openapi::apis::message::models::message_type::MessageType;
+use qqbot_rust_sdk::openapi::apis::message::models::{
+    message_ark::MessageArk, message_embed::MessageEmbed, message_markdown::MessageMarkdown,
+    message_media::MessageMedia, send_message_request::SendMessageRequest,
 };
 
 /// 指示回复的会话类型：私聊（C2c）或群组（Group）。
@@ -50,8 +51,15 @@ impl ReplyingMessage {
         let basic = SendMessageRequest {
             msg_id,
             msg_seq,
-            msg_type: self.to_msg_type().into(),
-            ..Default::default()
+            msg_type: self.to_msg_type(),
+            content: None,
+            markdown: None,
+            keyboard: None,
+            ark: None,
+            media: None,
+            embed: None,
+            message_reference: None,
+            event_id: None,
         };
         match self {
             Self::Text(text) => SendMessageRequest {
@@ -60,10 +68,7 @@ impl ReplyingMessage {
             },
             Self::Markdown(markdown) => SendMessageRequest {
                 markdown: Some(markdown.clone()),
-                keyboard: match &markdown.keyboard {
-                    Some(keyboard) => Some(keyboard.clone()),
-                    None => None,
-                },
+                keyboard: markdown.keyboard.clone(),
                 ..basic
             },
             Self::Ark(ark) => SendMessageRequest {

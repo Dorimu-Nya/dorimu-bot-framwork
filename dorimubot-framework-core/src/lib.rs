@@ -8,7 +8,7 @@ mod event_registry;
 pub mod events;
 mod registering;
 
-pub use app::{QQApiCLient, QQBot};
+pub use app::{QQApiClient, QQBot};
 pub use config::{CredentialConfig, ListeningConfig, QQBotConfig};
 pub use event_handler::EventHandler;
 pub use qqbot_rust_sdk;

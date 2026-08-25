@@ -20,42 +20,21 @@ impl Default for ListeningConfig {
 }
 
 /// QQ 机器人官网下发的票据。
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Default, Deserialize)]
 #[serde(default)]
 pub struct CredentialConfig {
     pub app_id: String,
     pub secret: String,
 }
 
-impl Default for CredentialConfig {
-    fn default() -> Self {
-        Self {
-            app_id: String::new(),
-            secret: String::new(),
-        }
-    }
-}
-
 /// 应用配置
-#[derive(Deserialize)]
+#[derive(Default, Deserialize)]
 #[serde(default)]
 pub struct QQBotConfig {
     /// 监听配置
     pub listening: ListeningConfig,
     /// QQ 机器人票据配置。
     pub credential: CredentialConfig,
-    /// API 地址覆写。
-    pub api_override: Option<String>,
-}
-
-impl Default for QQBotConfig {
-    fn default() -> Self {
-        Self {
-            listening: Default::default(),
-            credential: Default::default(),
-            api_override: Default::default(),
-        }
-    }
 }
 
 impl QQBotConfig {
@@ -76,11 +55,6 @@ impl QQBotConfig {
 
     pub fn credential(mut self, credential: CredentialConfig) -> Self {
         self.credential = credential;
-        self
-    }
-
-    pub fn api_override(mut self, api: &str) -> Self {
-        self.api_override = Some(api.to_string());
         self
     }
 }

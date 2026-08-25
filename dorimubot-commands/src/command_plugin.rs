@@ -2,7 +2,7 @@ use crate::{
     wrap_command_handle_fn, CommandDef, CommandHandler, CommandsStore, DynCommandHandleFn,
     ReplyingMessage,
 };
-use dorimubot_framework_core::{events, QQApiCLient, QQBot};
+use dorimubot_framework_core::{events, QQBot};
 use qqbot_rust_sdk::events::c2c::models::C2cMessage;
 use qqbot_rust_sdk::events::group::models::{GroupMention, GroupMessage};
 use std::collections::HashMap;
@@ -70,61 +70,77 @@ impl CommandPlugin {
 
         let commands = CommandsStore::new(commands);
 
-        let api = app.get_api_client();
+        let bot = app.clone();
         let c2c_commands = commands.clone();
         app.register_event_handler(events::c2c::C2cMessageCreate, move |message: C2cMessage| {
-            let api = Arc::clone(&api);
+            let bot = bot.clone();
             let commands = c2c_commands.clone();
-            async move { Self::handle_c2c(message, api, commands).await }
+            async move { Self::handle_c2c(message, bot, commands).await }
         });
 
-        let api = app.get_api_client();
+        let bot = app.clone();
         let group_message_commands = commands.clone();
         app.register_event_handler(
             events::group::GroupAtMessageCreate,
             move |message: GroupMessage| {
-                let api = Arc::clone(&api);
+                let bot = bot.clone();
                 let commands = group_message_commands.clone();
-                async move { Self::handle_group(message, api, commands).await }
+                async move { Self::handle_group(message, bot, commands).await }
             },
         );
 
-        let api = app.get_api_client();
+        let bot = app.clone();
         app.register_event_handler(
             events::group::GroupMessageCreate,
             move |message: GroupMessage| {
-                let api = Arc::clone(&api);
+                let bot = bot.clone();
                 let commands = commands.clone();
-                async move { Self::handle_group_message_create(message, api, commands).await }
+                async move { Self::handle_group_message_create(message, bot, commands).await }
             },
         );
     }
 
-    async fn handle_c2c(message: C2cMessage, api: Arc<QQApiCLient>, commands: CommandsStore) {
+    async fn handle_c2c(message: C2cMessage, bot: QQBot, commands: CommandsStore) {
         if let Some(reply) = Self::handle_message(&message, &commands).await {
             let body = reply.to_request(Some(message.id.clone()), Some(1));
-            let result = api
-                .c2c_messages()
-                .send_typed(&message.author.user_openid, &body)
-                .await;
+            let result = match bot.get_api_client().await {
+                Ok(api) => {
+                    api.message()
+                        .c2c()
+                        .post_c2c_message(&message.author.user_openid, &body)
+                        .await
+                }
+                Err(error) => {
+                    error!("initializing QQ API client failed: {error}");
+                    return;
+                }
+            };
             info!("send c2c message result: {:?}", result);
         }
     }
 
-    async fn handle_group(message: GroupMessage, api: Arc<QQApiCLient>, commands: CommandsStore) {
+    async fn handle_group(message: GroupMessage, bot: QQBot, commands: CommandsStore) {
         if let Some(reply) = Self::handle_message(&message, &commands).await {
             let body = reply.to_request(Some(message.id.clone()), Some(1));
-            let result = api
-                .group_messages()
-                .send_typed(&message.group_openid, &body)
-                .await;
+            let result = match bot.get_api_client().await {
+                Ok(api) => {
+                    api.message()
+                        .group()
+                        .post_group_message(&message.group_openid, &body)
+                        .await
+                }
+                Err(error) => {
+                    error!("initializing QQ API client failed: {error}");
+                    return;
+                }
+            };
             info!("send group message result: {:?}", result);
         }
     }
 
     async fn handle_group_message_create(
         message: GroupMessage,
-        api: Arc<QQApiCLient>,
+        bot: QQBot,
         commands: CommandsStore,
     ) {
         if let Some(mentions) = &message.mentions {
@@ -142,7 +158,7 @@ impl CommandPlugin {
                             .to_string(),
                     )
                 }
-                Self::handle_group(message, api, commands).await;
+                Self::handle_group(message, bot, commands).await;
             }
         }
     }

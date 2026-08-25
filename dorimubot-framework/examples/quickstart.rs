@@ -3,9 +3,11 @@ use dorimubot_framework::{
     dorimubot_framework_core::{CredentialConfig, QQBot, QQBotConfig},
     run_dorimubot,
 };
-use qqbot_rust_sdk::openapi::models::message::{
-    Action, ActionType, Keyboard, KeyboardButton, KeyboardContent, KeyboardRow, MessageMarkdown,
-    Permission, PermissionType, RenderData,
+use qqbot_rust_sdk::openapi::apis::message::models::{
+    action::Action, action_type::ActionType, keyboard::Keyboard, keyboard_button::KeyboardButton,
+    keyboard_content::KeyboardContent, keyboard_row::KeyboardRow,
+    message_markdown::MessageMarkdown, permission::Permission, permission_type::PermissionType,
+    render_data::RenderData,
 };
 use std::sync::atomic::{AtomicI16, Ordering};
 use std::sync::Arc;
@@ -85,8 +87,7 @@ async fn main() -> std::io::Result<()> {
             secret: "".to_string(),
         })
         .bind_addr("0.0.0.0:3000")
-        .webhook_path("/webhook")
-        .api_override("https://sandbox.api.sgroup.qq.com");
+        .webhook_path("/webhook");
 
     let app = QQBot::new(config);
     command_plugin.register(&app);
